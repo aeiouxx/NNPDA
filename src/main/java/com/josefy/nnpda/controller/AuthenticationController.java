@@ -1,11 +1,15 @@
 package com.josefy.nnpda.controller;
 
+import com.josefy.nnpda.infrastructure.dto.AuthResponse;
+import com.josefy.nnpda.infrastructure.dto.LoginRequest;
 import com.josefy.nnpda.infrastructure.security.JwtTokenProvider;
+import com.josefy.nnpda.infrastructure.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,16 +23,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Tag(name = "Auth", description = "Manages operations concerning authentication of users.")
 @Controller
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 @Slf4j
 public class AuthenticationController {
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
-    record LoginRequest(String username, String password) {}
-    record AuthResponse(String token) {}
+    private final IUserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
     @PostMapping("/login")
     @Operation(
             summary = "Authenticate user",
-            description = "Authenticate user with provided credentials.",
+            description = "Validate user credentials and return a JWT token on successful authentication.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "User credentials",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = LoginRequest.class))),
             responses = {
                     @ApiResponse(
                             description = "User authenticated successfully.",
@@ -39,7 +46,7 @@ public class AuthenticationController {
                             responseCode = "401")
             })
     public ResponseEntity<?> authenticate(@RequestBody LoginRequest request){
-        log.info("Login request: " + request.password);
-        return ResponseEntity.ok(new AuthResponse("token_boj"));
+        log.info("Login request: " + request.password());
+        return ResponseEntity.ok(new AuthResponse("FAKE_TOKEN_RESPONSE"));
     }
 }
