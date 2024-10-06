@@ -23,6 +23,19 @@ public class JwtTokenProvider {
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
+    public String generateToken(String username) {
+        return generateToken(Map.of(), username);
+    }
+    public String generateToken(Map<String, Object> additionalClaims,
+                                String username) {
+        return Jwts.builder()
+                .claims(additionalClaims)
+                .subject(username)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + validityMilliseconds))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
     public String generateToken(UserDetails userDetails) {
         return generateToken(Map.of(), userDetails);
     }

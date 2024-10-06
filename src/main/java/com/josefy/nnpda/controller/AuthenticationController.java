@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,7 +43,12 @@ public class AuthenticationController {
                             responseCode = "401")
             })
     public ResponseEntity<?> authenticate(@RequestBody LoginRequest request){
-        log.info("Login request: " + request.password());
-        return ResponseEntity.ok(new AuthResponse("FAKE_TOKEN_RESPONSE"));
+        log.info("Authenticating user: {}", request.username());
+        return userService.getUserByUsername(request.username())
+                .map(user -> {
+                    var token = jwtTokenProvider.generateToken(user.getUsername());
+                    return ResponseEntity.ok(new AuthResponse(token));
+                })
+                .orElse(ResponseEntity.status(401).build());
     }
 }

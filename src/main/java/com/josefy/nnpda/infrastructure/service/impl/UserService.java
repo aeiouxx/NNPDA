@@ -8,23 +8,25 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserService implements IUserService {
     private final IUserRepository userRepository;
     @Override
-    public User getUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> NotFoundException.create(User.class));
+    public Optional<User> getUserById(Long id) {
+        return userRepository.findById(id);
     }
 
     @Override
-    public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> NotFoundException.create(User.class));
+    public Optional<User> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     @Override
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> NotFoundException.create(User.class));
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override
