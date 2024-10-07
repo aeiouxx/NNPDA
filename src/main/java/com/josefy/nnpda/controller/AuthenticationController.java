@@ -1,14 +1,16 @@
 package com.josefy.nnpda.controller;
 
-import com.josefy.nnpda.infrastructure.dto.AuthResponse;
+import com.josefy.nnpda.infrastructure.dto.AuthenticationResponse;
 import com.josefy.nnpda.infrastructure.dto.LoginRequest;
-import com.josefy.nnpda.infrastructure.security.JwtTokenProvider;
+import com.josefy.nnpda.infrastructure.dto.RegisterRequest;
 import com.josefy.nnpda.infrastructure.service.IUserService;
+import com.josefy.nnpda.infrastructure.service.IAuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +25,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationController {
-    private final IUserService userService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final IAuthenticationService authenticationService;
+    @PostMapping("/register")
+    @Operation(
+                summary = "Register user",
+                description = "Register user with provided credentials, return JWT token on successful registration.",
+                requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                        description = "User credentials",
+                        required = true,
+                        content = @Content(schema = @Schema(implementation = RegisterRequest.class))),
+                responses = {
+                        @ApiResponse(
+                                description = "User registered successfully.",
+                                responseCode = "200",
+                                content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
+                        @ApiResponse(
+                                description = "User registration failed because of invalid request format.",
+                                responseCode = "400"),
+                        @ApiResponse(
+                                description = "User with provided username or email already exists.",
+                                responseCode = "409")
+                }
+        )
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authenticationService.register(request));
+    }
     @PostMapping("/login")
     @Operation(
             summary = "Authenticate user",
@@ -37,18 +62,12 @@ public class AuthenticationController {
                     @ApiResponse(
                             description = "User authenticated successfully.",
                             responseCode = "200",
-                            content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+                            content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
                     @ApiResponse(
                             description = "User authentication failed.",
                             responseCode = "401")
             })
-    public ResponseEntity<?> authenticate(@RequestBody LoginRequest request){
-        log.info("Authenticating user: {}", request.username());
-        return userService.getUserByUsername(request.username())
-                .map(user -> {
-                    var token = jwtTokenProvider.generateToken(user.getUsername());
-                    return ResponseEntity.ok(new AuthResponse(token));
-                })
-                .orElse(ResponseEntity.status(401).build());
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request){
+        return ResponseEntity.ok(authenticationService.login(request));
     }
 }

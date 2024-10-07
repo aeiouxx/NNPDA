@@ -1,5 +1,6 @@
 package com.josefy.nnpda.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.josefy.nnpda.config.SecurityConfig;
 import com.josefy.nnpda.controller.AuthenticationController;
 import com.josefy.nnpda.infrastructure.security.JwtTokenProvider;
@@ -25,6 +26,8 @@ import static org.mockito.Mockito.when;
 public  class BaseWebMvcTest {
     @Autowired
     protected MockMvc mockMvc;
+    @Autowired
+    protected ObjectMapper objectMapper;
     @MockBean
     protected IUserService userService;
     @MockBean
@@ -34,16 +37,9 @@ public  class BaseWebMvcTest {
 
 
     protected final User setMockUser(String username, String email, String password) {
-        var user = getMockUser(username, email, password);
+        var user = new User(username, email, password);
         when(userService.getUserByUsername(username))
                 .thenReturn(Optional.of(user));
-        return user;
-    }
-    private User getMockUser(String username, String email, String password) {
-        var user = new User();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPassword(password);
         return user;
     }
 }

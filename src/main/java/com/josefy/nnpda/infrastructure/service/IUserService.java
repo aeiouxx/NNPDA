@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 public interface IUserService {
+
     public Optional<User> getUserById(Long id);
     public Optional<User> getUserByUsername(String username);
     public Optional<User> getUserByEmail(String email);
     public void deleteUser(User user);
+    public User save(User user);
 }
