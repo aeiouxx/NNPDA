@@ -31,7 +31,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         log.info("Request to: " + request.getRequestURI());
         log.info("Servlet path: " + request.getServletPath());
-        if (request.getRequestURI().contains("/api/auth")) {
+        if (request.getRequestURI().contains("/api/auth")
+                || request.getRequestURI().contains("/api/user/password-reset-request")
+                || request.getRequestURI().contains("/api/user/change-password-token")) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -1,8 +1,6 @@
 package com.josefy.nnpda.controller;
 
-import com.josefy.nnpda.infrastructure.dto.AuthenticationResponse;
-import com.josefy.nnpda.infrastructure.dto.LoginRequest;
-import com.josefy.nnpda.infrastructure.dto.RegisterRequest;
+import com.josefy.nnpda.infrastructure.dto.*;
 import com.josefy.nnpda.infrastructure.service.IUserService;
 import com.josefy.nnpda.infrastructure.service.IAuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,6 +61,9 @@ public class AuthenticationController {
                             description = "User authenticated successfully.",
                             responseCode = "200",
                             content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
+                    @ApiResponse(
+                            description = "User authentication failed because of invalid request format.",
+                            responseCode = "400"),
                     @ApiResponse(
                             description = "User authentication failed.",
                             responseCode = "401")

@@ -13,4 +13,9 @@ public interface IUserService {
     public Optional<User> getUserByEmail(String email);
     public void deleteUser(User user);
     public User save(User user);
+
+
+    public void requestPasswordReset(String username);
+    public void resetPassword(String token, String password);
+    public void changePassword(String username, String oldPassword, String newPassword);
 }

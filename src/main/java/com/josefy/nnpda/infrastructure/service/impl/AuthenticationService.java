@@ -3,6 +3,8 @@ package com.josefy.nnpda.infrastructure.service.impl;
 import com.josefy.nnpda.infrastructure.dto.AuthenticationResponse;
 import com.josefy.nnpda.infrastructure.dto.LoginRequest;
 import com.josefy.nnpda.infrastructure.dto.RegisterRequest;
+import com.josefy.nnpda.infrastructure.dto.ResetPasswordRequest;
+import com.josefy.nnpda.infrastructure.exceptions.NotFoundException;
 import com.josefy.nnpda.infrastructure.exceptions.UnauthorizedException;
 import com.josefy.nnpda.infrastructure.repository.IUserRepository;
 import com.josefy.nnpda.infrastructure.security.JwtTokenProvider;
@@ -46,10 +48,5 @@ public class AuthenticationService implements IAuthenticationService {
         var newUser = userRepository.save(new User(request.username(), request.email(), encodedPassword));
         var token = jwtTokenProvider.generateToken(newUser.getUsername());
         return new AuthenticationResponse(token);
-    }
-
-    @Override
-    public AuthenticationResponse refresh(String request) {
-        throw new UnsupportedOperationException("Not implemented.");
     }
 }

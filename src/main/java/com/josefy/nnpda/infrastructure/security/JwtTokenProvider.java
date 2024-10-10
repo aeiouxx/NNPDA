@@ -1,5 +1,6 @@
 package com.josefy.nnpda.infrastructure.security;
 
+import com.josefy.nnpda.config.ApplicationConfig;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
