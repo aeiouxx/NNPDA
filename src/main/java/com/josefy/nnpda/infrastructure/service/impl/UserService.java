@@ -1,6 +1,6 @@
 package com.josefy.nnpda.infrastructure.service.impl;
 
-import com.josefy.nnpda.infrastructure.exceptions.*;
+import com.josefy.nnpda.infrastructure.Either;
 import com.josefy.nnpda.infrastructure.repository.IPasswordResetTokenRepository;
 import com.josefy.nnpda.infrastructure.repository.IUserRepository;
 import com.josefy.nnpda.infrastructure.service.IEmailService;
@@ -16,8 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.Calendar;
-import java.util.Optional;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -29,101 +28,105 @@ public class UserService implements IUserService {
     private final IEmailService emailService;
 
     @Override
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+    public Either<String, User> getById(Long id) {
+        return userRepository.findById(id)
+                .map(Either::<String, User>right)
+                .orElse(Either.left("User not found."));
     }
 
     @Override
-    public Optional<User> getUserByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public Either<String, User> getByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(Either::<String, User>right)
+                .orElse(Either.left("User not found."));
     }
 
     @Override
-    public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public Either<String, User> getByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(Either::<String, User>right)
+                .orElse(Either.left("User not found."));
+    }
+
+    @Override
+    public Either<String, Void> delete(User user) {
+        userRepository.delete(user);
+        return Either.right(null);
+    }
+
+    @Override
+    public Either<String, User> save(User user) {
+        var username = user.getUsername();
+        if (userRepository.existsByUsername(username)) {
+            return Either.left("User '{}' already exists.".formatted(username));
+        }
+        if (userRepository.existsByEmail(user.getEmail())) {
+            return Either.left("Email '{}' is already registered.".formatted(user.getEmail()));
+        }
+
+        return Either.right(userRepository.save(user));
     }
 
     @Override
     @Transactional
-    public void deleteUser(User user) {
-        userRepository.deleteByUsername(user.getUsername());
+    public Either<String, Void> requestPasswordReset(String username) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            return Either.left("User not found.");
+        }
+        var currentTime = new Date();
+        var existingToken = passwordResetTokenRepository.findByUserUsername(username);
+        if (existingToken.isPresent() && !existingToken.get().isExpired(currentTime)) {
+             // Do nothing if token is still valid (could do other things also)
+            return Either.right(null);
+        }
+        var data = generateNextTokenData(currentTime);
+        var token = new PasswordResetToken(data.hash, data.expiration, user);
+        log.info("Generated token '{}' for user '{}', email '{}'.", data.hash, user.getUsername(), user.getEmail());
+        passwordResetTokenRepository.save(token);
+        emailService.sendPasswordReset(user.getEmail(), data.text);
+        return Either.right(null);
     }
 
     @Override
     @Transactional
-    public User save(User user) {
-        if (userRepository.existsByUsernameOrEmail(user.getUsername(), user.getEmail())) {
-            throw new ConflictException("User with provided username or email already exists.");
+    public Either<String, Void> resetPassword(String token, String password) {
+        var hash = Hashing.sha256(token);
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenHash(hash).orElse(null);
+        if (resetToken == null || resetToken.isExpired(new Date())) {
+            return Either.left("Invalid or expired token.");
         }
-        return userRepository.save(user);
-    }
 
+        var user = resetToken.getUser();
+        var newPassword = passwordEncoder.encode(password);
+        user.setPassword(newPassword);
+        userRepository.save(user);
+        passwordResetTokenRepository.delete(resetToken);
+        return Either.right(null);
+    }
     @Override
     @Transactional
-    public void requestPasswordReset(String username) {
-        var user = userRepository.findByUsername(username);
-        if (user.isEmpty()) {
-            log.info("Attempted to reset password for non-existing user: {}", username);
-            return;
+    public Either<String, Void> changePassword(String username, String oldPassword, String newPassword) {
+        var user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            return Either.left("User not found.");
         }
-
-        var existingToken
-                = passwordResetTokenRepository.findByUserUsername(username);
-        if (existingToken.isPresent()) {
-            var expiryDate = existingToken.get().getExpiryDate();
-            if (expiryDate.after(Calendar.getInstance().getTime())) {
-                return;
-            }
-            passwordResetTokenRepository.delete(existingToken.get());
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return Either.left("Invalid password.");
         }
-
+        var newHashedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(newHashedPassword);
+        userRepository.save(user);
+        return Either.right(null);
+    }
+    private record TokenData(String text, String hash, Date expiration) {}
+    private TokenData generateNextTokenData(Date currentTime) {
         var random = new SecureRandom();
         var bytes = new byte[64];
         random.nextBytes(bytes);
-        String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        String hash = Hashing.sha256(token);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR, 24);
-        var expiryDate = calendar.getTime();
-
-        var passwordResetToken = new PasswordResetToken(hash, expiryDate, user.get());
-        passwordResetTokenRepository.save(passwordResetToken);
-        var email = user.get().getEmail();
-        emailService.sendPasswordReset(email, token);
-    }
-
-
-    @Override
-    @Transactional
-    public void resetPassword(String token, String password) {
-        var hash = Hashing.sha256(token);
-        var passwordResetToken = passwordResetTokenRepository.findByTokenHash(hash);
-        if (passwordResetToken.isEmpty()) {
-            log.info("Attempted to reset password with invalid token: {}", token);
-            throw new InvalidTokenException("Invalid token.");
-        }
-        if (passwordResetToken.get().getExpiryDate().before(Calendar.getInstance().getTime())) {
-            log.info("Attempted to reset password with expired token: {}", token);
-            throw new UnauthorizedException("Expired token.");
-        }
-        var user = passwordResetToken.get().getUser();
-        user.setPassword(passwordEncoder.encode(password));
-        userRepository.save(user);
-        passwordResetTokenRepository.delete(passwordResetToken.get());
-    }
-
-    @Override
-    @Transactional
-    public void changePassword(String username, String oldPassword, String newPassword) {
-        var user = userRepository.findByUsername(username);
-        if (user.isEmpty()) {
-            throw new NotFoundException(User.class);
-        }
-        if (!passwordEncoder.matches(oldPassword, user.get().getPassword())) {
-            throw new BadRequestException("Invalid old password.");
-        }
-        user.get().setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user.get());
+        var text = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        String hash = Hashing.sha256(text);
+        var expiration = new Date(currentTime.getTime() + PasswordResetToken.EXPIRATION_MILLIS);
+        return new TokenData(text, hash, expiration);
     }
 }
