@@ -6,6 +6,7 @@ import com.josefy.nnpda.infrastructure.dto.RegisterRequest;
 import com.josefy.nnpda.infrastructure.exceptions.ConflictException;
 import com.josefy.nnpda.infrastructure.exceptions.UnauthorizedException;
 import com.josefy.nnpda.infrastructure.service.IAuthenticationService;
+import com.josefy.nnpda.infrastructure.utils.Either;
 import com.josefy.nnpda.utils.BaseWebMvcTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,7 +29,8 @@ public class AuthenticationControllerTest extends BaseWebMvcTest {
         var request = new LoginRequest("test_user", "test_password");
         var token = "FAKE_TOKEN_RESPONSE";
         var authResponse = new AuthenticationResponse(token);
-        when(authenticationService.login(any(LoginRequest.class))).thenReturn(authResponse);
+        when(authenticationService.login(any(LoginRequest.class))).thenReturn(
+                Either.right(authResponse));
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -64,7 +66,8 @@ public class AuthenticationControllerTest extends BaseWebMvcTest {
         var token = "FAKE_TOKEN_RESPONSE";
         var authResponse = new AuthenticationResponse(token);
 
-        when(authenticationService.register(any(RegisterRequest.class))).thenReturn(authResponse);
+        when(authenticationService.register(any(RegisterRequest.class))).thenReturn(
+                Either.right(authResponse));
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

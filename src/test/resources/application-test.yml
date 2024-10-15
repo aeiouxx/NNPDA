@@ -8,6 +8,8 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
   liquibase:
     enabled: false
-
+  mail:
+    username: "test@example.com"
+    password: "test"
 jwt:
-  secret: "test"
+  secret: "testSecretNotEvenUsed"

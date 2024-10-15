@@ -3,6 +3,7 @@ package com.josefy.nnpda.controller;
 import com.josefy.nnpda.infrastructure.dto.*;
 import com.josefy.nnpda.infrastructure.service.IUserService;
 import com.josefy.nnpda.infrastructure.service.IAuthenticationService;
+import com.josefy.nnpda.infrastructure.utils.Status;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -46,7 +47,7 @@ public class AuthenticationController {
                 }
         )
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authenticationService.register(request));
+        return authenticationService.register(request).fold(Status::toResponseEntity, ResponseEntity::ok);
     }
     @PostMapping("/login")
     @Operation(
@@ -69,6 +70,6 @@ public class AuthenticationController {
                             responseCode = "401")
             })
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request){
-        return ResponseEntity.ok(authenticationService.login(request));
+        return authenticationService.login(request).fold(Status::toResponseEntity, ResponseEntity::ok);
     }
 }

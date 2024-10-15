@@ -10,9 +10,12 @@ import com.josefy.nnpda.infrastructure.repository.IUserRepository;
 import com.josefy.nnpda.infrastructure.security.JwtTokenProvider;
 import com.josefy.nnpda.infrastructure.service.IAuthenticationService;
 import com.josefy.nnpda.infrastructure.service.IUserService;
+import com.josefy.nnpda.infrastructure.utils.Either;
+import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,27 +29,35 @@ public class AuthenticationService implements IAuthenticationService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     @Override
-    public AuthenticationResponse login(LoginRequest request) {
-        User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new UnauthorizedException("Invalid username or password."));
+    public Either<Status, AuthenticationResponse> login(LoginRequest request) {
+        var user = userRepository.findByUsername(request.username()).orElse(null);
+        if (user == null) {
+            log.info("User with username '{}' not found", request.username());
+            var message = "Invalid username or password.";
+            return Either.left(new Status(message, HttpStatus.UNAUTHORIZED));
+        }
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new UnauthorizedException("Invalid username or password.");
+            log.info("Incorrect password for user '{}'", request.username());
+            var message = "Invalid username or password.";
+            return Either.left(new Status(message, HttpStatus.UNAUTHORIZED));
         }
         var token = jwtTokenProvider.generateToken(user.getUsername());
-        return new AuthenticationResponse(token);
+        return Either.right(new AuthenticationResponse(token));
     }
 
     @Override
-    public AuthenticationResponse register(RegisterRequest request) {
+    public Either<Status, AuthenticationResponse> register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
-            throw new UnauthorizedException("User with provided username already exists.");
+            var message = "User with provided username already exists.";
+            return Either.left(new Status(message, HttpStatus.CONFLICT));
         }
         if (userRepository.existsByEmail(request.email())) {
-            throw new UnauthorizedException("User with provided email already exists.");
+            var message = "User with provided email already exists";
+            return Either.left(new Status(message, HttpStatus.CONFLICT));
         }
         var encodedPassword = passwordEncoder.encode(request.password());
         var newUser = userRepository.save(new User(request.username(), request.email(), encodedPassword));
         var token = jwtTokenProvider.generateToken(newUser.getUsername());
-        return new AuthenticationResponse(token);
+        return Either.right(new AuthenticationResponse(token));
     }
 }

@@ -1,16 +1,19 @@
 package com.josefy.nnpda.infrastructure.service.impl;
 
-import com.josefy.nnpda.infrastructure.Either;
+import com.josefy.nnpda.infrastructure.utils.Either;
 import com.josefy.nnpda.infrastructure.repository.IPasswordResetTokenRepository;
 import com.josefy.nnpda.infrastructure.repository.IUserRepository;
 import com.josefy.nnpda.infrastructure.service.IEmailService;
 import com.josefy.nnpda.infrastructure.service.IUserService;
 import com.josefy.nnpda.infrastructure.utils.Hashing;
+import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.PasswordResetToken;
 import com.josefy.nnpda.model.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,42 +29,48 @@ public class UserService implements IUserService {
     private final IPasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final IEmailService emailService;
+    private static Status USER_NOT_FOUND
+            = new Status("User not found.", HttpStatus.NOT_FOUND);
 
     @Override
-    public Either<String, User> getById(Long id) {
+    public Either<Status, User> getById(Long id) {
         return userRepository.findById(id)
-                .map(Either::<String, User>right)
-                .orElse(Either.left("User not found."));
+                .map(Either::<Status, User>right)
+                .orElse(Either.left(USER_NOT_FOUND));
     }
 
     @Override
-    public Either<String, User> getByUsername(String username) {
+    public Either<Status, User> getByUsername(String username) {
         return userRepository.findByUsername(username)
-                .map(Either::<String, User>right)
-                .orElse(Either.left("User not found."));
+                .map(Either::<Status, User>right)
+                .orElse(Either.left(USER_NOT_FOUND));
     }
 
     @Override
-    public Either<String, User> getByEmail(String email) {
+    public Either<Status, User> getByEmail(String email) {
         return userRepository.findByEmail(email)
-                .map(Either::<String, User>right)
-                .orElse(Either.left("User not found."));
+                .map(Either::<Status, User>right)
+                .orElse(Either.left(USER_NOT_FOUND));
     }
 
     @Override
-    public Either<String, Void> delete(User user) {
+    public Either<Status, Void> delete(User user) {
         userRepository.delete(user);
         return Either.right(null);
     }
 
     @Override
-    public Either<String, User> save(User user) {
+    public Either<Status, User> save(User user) {
         var username = user.getUsername();
         if (userRepository.existsByUsername(username)) {
-            return Either.left("User '{}' already exists.".formatted(username));
+            var message = new Status("User '%s' already exists.".formatted(username),
+                    HttpStatus.CONFLICT);
+            return Either.left(message);
         }
         if (userRepository.existsByEmail(user.getEmail())) {
-            return Either.left("Email '{}' is already registered.".formatted(user.getEmail()));
+            var message = new Status("Email '%s' is already registered.".formatted(user.getEmail()),
+                    HttpStatus.CONFLICT);
+            return Either.left(message);
         }
 
         return Either.right(userRepository.save(user));
@@ -69,10 +78,10 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public Either<String, Void> requestPasswordReset(String username) {
+    public Either<Status, Void> requestPasswordReset(String username) {
         User user = userRepository.findByUsername(username).orElse(null);
         if (user == null) {
-            return Either.left("User not found.");
+            return Either.left(USER_NOT_FOUND);
         }
         var currentTime = new Date();
         var existingToken = passwordResetTokenRepository.findByUserUsername(username);
@@ -90,13 +99,13 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public Either<String, Void> resetPassword(String token, String password) {
+    public Either<Status, Void> resetPassword(String token, String password) {
         var hash = Hashing.sha256(token);
         PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenHash(hash).orElse(null);
         if (resetToken == null || resetToken.isExpired(new Date())) {
-            return Either.left("Invalid or expired token.");
+            return Either.left(
+                    new Status("Invalid or expired token.", HttpStatus.UNAUTHORIZED));
         }
-
         var user = resetToken.getUser();
         var newPassword = passwordEncoder.encode(password);
         user.setPassword(newPassword);
@@ -106,13 +115,14 @@ public class UserService implements IUserService {
     }
     @Override
     @Transactional
-    public Either<String, Void> changePassword(String username, String oldPassword, String newPassword) {
+    public Either<Status, Void> changePassword(String username, String oldPassword, String newPassword) {
         var user = userRepository.findByUsername(username).orElse(null);
         if (user == null) {
-            return Either.left("User not found.");
+            return Either.left(USER_NOT_FOUND);
         }
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            return Either.left("Invalid password.");
+            return Either.left(new Status( "Incorrect old password.",
+                    HttpStatus.BAD_REQUEST));
         }
         var newHashedPassword = passwordEncoder.encode(newPassword);
         user.setPassword(newHashedPassword);

@@ -1,8 +1,6 @@
-package com.josefy.nnpda.infrastructure;
+package com.josefy.nnpda.infrastructure.utils;
 
-import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public sealed abstract class Either<A, B> permits Either.Left, Either.Right {
     private Either() {}

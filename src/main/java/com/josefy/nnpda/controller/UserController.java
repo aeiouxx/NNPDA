@@ -5,6 +5,7 @@ import com.josefy.nnpda.infrastructure.dto.NewPasswordRequest;
 import com.josefy.nnpda.infrastructure.dto.ResetPasswordRequest;
 import com.josefy.nnpda.infrastructure.service.IAuthenticationService;
 import com.josefy.nnpda.infrastructure.service.IUserService;
+import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -48,8 +51,9 @@ public class UserController {
     )
     @PostMapping("/password-reset-request")
     public ResponseEntity<?> requestPasswordReset(@RequestBody @Valid ResetPasswordRequest request) {
-        userService.requestPasswordReset(request.username());
-        return ResponseEntity.ok().build();
+        return userService
+                .requestPasswordReset(request.username())
+                .fold(Status::toResponseEntity, ResponseEntity::ok);
     }
 
     @Operation(
@@ -73,8 +77,9 @@ public class UserController {
     )
     @PutMapping("/change-password-token")
     public ResponseEntity<?> changePasswordViaToken(@RequestBody @Valid NewPasswordRequest request) {
-        userService.resetPassword(request.token(), request.password());
-        return ResponseEntity.ok().build();
+       return userService
+               .resetPassword(request.token(), request.password())
+               .fold(Status::toResponseEntity, ResponseEntity::ok);
     }
 
     @Operation(
@@ -101,7 +106,8 @@ public class UserController {
     public ResponseEntity<?> changePassword(
             @Valid @RequestBody ChangePasswordRequest request,
             @AuthenticationPrincipal User user) {
-        userService.changePassword(user.getUsername(), request.oldPassword(), request.newPassword());
-        return ResponseEntity.ok().build();
+    return userService
+            .changePassword(user.getUsername(), request.oldPassword(), request.newPassword())
+            .fold(Status::toResponseEntity, ResponseEntity::ok);
     }
 }

@@ -5,7 +5,10 @@ import com.josefy.nnpda.config.SecurityConfig;
 import com.josefy.nnpda.controller.AuthenticationController;
 import com.josefy.nnpda.infrastructure.security.JwtTokenProvider;
 import com.josefy.nnpda.infrastructure.service.IUserService;
+import com.josefy.nnpda.infrastructure.service.impl.EmailService;
+import com.josefy.nnpda.infrastructure.utils.Either;
 import com.josefy.nnpda.model.User;
+import jakarta.validation.constraints.Email;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
@@ -13,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -31,6 +35,10 @@ public  class BaseWebMvcTest {
     @MockBean
     protected IUserService userService;
     @MockBean
+    protected EmailService emailService;
+    @MockBean
+    protected JavaMailSender javaMailSender;
+    @MockBean
     protected JwtTokenProvider jwtTokenProvider;
     @MockBean
     protected UserDetailsService userDetailsService;
@@ -38,8 +46,8 @@ public  class BaseWebMvcTest {
 
     protected final User setMockUser(String username, String email, String password) {
         var user = new User(username, email, password);
-        when(userService.getUserByUsername(username))
-                .thenReturn(Optional.of(user));
+        when(userService.getByUsername(username))
+                .thenReturn(Either.right(user));
         return user;
     }
 }
