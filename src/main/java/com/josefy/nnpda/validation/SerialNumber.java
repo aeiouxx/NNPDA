@@ -12,4 +12,7 @@ public @interface SerialNumber {
     String message() default "Serial number must be exactly 12 hexadecimal digits.";
     Class<?>[] groups() default {};
     Class<?>[] payload() default {};
+
+
+    boolean optional() default false;
 }

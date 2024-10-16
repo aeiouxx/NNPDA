@@ -16,6 +16,7 @@ public interface IDeviceRepository extends JpaRepository<Device, Long> {
 
     boolean existsBySerialNumber(String serialNumber);
     Optional<Device> findBySerialNumber(String serialNumber);
+    List<Device> findBySerialNumberIn(List<String> serialNumbers);
     Set<Device> findByModelName(String modelName);
     Device save(Device device);
     void deleteBySerialNumber(String serialNumber);

@@ -1,13 +1,19 @@
 package com.josefy.nnpda.infrastructure.exceptions;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -46,6 +52,21 @@ public class GlobalExceptionHandler {
                         Collectors.toMap(
                                 error -> error.getField(),
                                 error -> error.getDefaultMessage()
+                        )
+                );
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<Map<String, String>> handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
+        Map<String, String> errors = ex.getAllValidationResults()
+                .stream()
+                .collect(
+                        Collectors.toMap(
+                                result -> result.getMethodParameter().getParameterName(),
+                                result -> result.getResolvableErrors().stream()
+                                        .map(MessageSourceResolvable::getDefaultMessage)
+                                        .collect(Collectors.joining(", "))
                         )
                 );
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);

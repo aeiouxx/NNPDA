@@ -7,6 +7,7 @@ import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.Device;
 import com.josefy.nnpda.model.User;
 import com.josefy.nnpda.service.IDeviceService;
+import com.josefy.nnpda.validation.SerialNumber;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -94,7 +95,7 @@ public class DeviceController {
     public ResponseEntity<?> getOne(
             @Parameter(description = "Include sensors in the response")
             @RequestParam(defaultValue = "false") boolean withSensors,
-            @PathVariable @Valid String serialNumber,
+            @PathVariable @Valid @SerialNumber String serialNumber,
             @AuthenticationPrincipal User user) {
         var device = deviceService.findBySerialNumber(serialNumber, withSensors);
         final Function<Device, ?> mapping = withSensors
@@ -114,7 +115,7 @@ public class DeviceController {
                     content = @Content(schema = @Schema(implementation = DeviceWithSensorSerialsDto.class))),
             responses = {
                     @ApiResponse(
-                            responseCode = "200",
+                            responseCode = "201",
                             content = @Content(schema = @Schema(implementation = DeviceWithSensorsDto.class))
                     ),
                     @ApiResponse(
@@ -127,7 +128,8 @@ public class DeviceController {
             @RequestBody @Valid DeviceWithSensorSerialsDto device,
             @AuthenticationPrincipal User user) {
         return deviceService.create(device)
-                .fold(Status::toResponseEntity, success -> ResponseEntity.ok(DeviceWithSensorsDto.fromEntity(success)));
+                .fold(Status::toResponseEntity,
+                      success -> ResponseEntity.status(201).body(DeviceWithSensorsDto.fromEntity(success)));
     }
 
     @PutMapping("/{serialNumber}")
@@ -149,7 +151,7 @@ public class DeviceController {
             }
     )
     public ResponseEntity<?> update(
-            @PathVariable @Valid String serialNumber,
+            @PathVariable @Valid @SerialNumber String serialNumber,
             @RequestBody @Valid DeviceWithSensorSerialsDto device,
             @AuthenticationPrincipal User user) {
         return deviceService.update(serialNumber, device)
@@ -172,7 +174,7 @@ public class DeviceController {
             }
     )
     public ResponseEntity<?> delete(
-            @PathVariable @Valid String serialNumber,
+            @PathVariable @Valid @SerialNumber String serialNumber,
             @AuthenticationPrincipal User user) {
         return deviceService.delete(serialNumber).fold(Status::toResponseEntity, ResponseEntity::ok);
     }
