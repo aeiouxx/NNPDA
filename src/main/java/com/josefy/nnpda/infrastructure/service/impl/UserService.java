@@ -9,13 +9,13 @@ import com.josefy.nnpda.infrastructure.utils.Hashing;
 import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.PasswordResetToken;
 import com.josefy.nnpda.model.User;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.Base64;

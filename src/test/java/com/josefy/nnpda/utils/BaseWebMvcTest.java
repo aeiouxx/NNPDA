@@ -2,16 +2,11 @@ package com.josefy.nnpda.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.josefy.nnpda.config.SecurityConfig;
-import com.josefy.nnpda.controller.AuthenticationController;
 import com.josefy.nnpda.infrastructure.security.JwtTokenProvider;
 import com.josefy.nnpda.infrastructure.service.IUserService;
 import com.josefy.nnpda.infrastructure.service.impl.EmailService;
 import com.josefy.nnpda.infrastructure.utils.Either;
 import com.josefy.nnpda.model.User;
-import jakarta.validation.constraints.Email;
-import org.junit.jupiter.api.BeforeEach;
-import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,9 +14,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 

@@ -1,4 +1,4 @@
-package com.josefy.nnpda.controller;
+package com.josefy.nnpda.infrastructure.controller;
 
 import com.josefy.nnpda.infrastructure.dto.ChangePasswordRequest;
 import com.josefy.nnpda.infrastructure.dto.NewPasswordRequest;
