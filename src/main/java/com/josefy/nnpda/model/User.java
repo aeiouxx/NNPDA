@@ -7,11 +7,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
 @Table(
     name = "users",
@@ -20,16 +21,24 @@ import java.util.List;
         @UniqueConstraint(columnNames = "email", name = "user_email_uq")
     }
 )
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
+    @EqualsAndHashCode.Include
     private Long id;
+
     @Column(name = "username", nullable = false, unique = true)
+    @EqualsAndHashCode.Include
     private String username;
+
     @Column(name = "email", nullable = false, unique = true)
+    @EqualsAndHashCode.Include
     private String email;
+
     @Column(name = "password", nullable = false)
+    @ToString.Exclude
     private String password ;
 
     public User(String username, String email, String password) {

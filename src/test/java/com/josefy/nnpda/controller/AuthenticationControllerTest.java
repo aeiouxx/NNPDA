@@ -1,5 +1,6 @@
 package com.josefy.nnpda.controller;
 
+import com.josefy.nnpda.infrastructure.controller.AuthenticationController;
 import com.josefy.nnpda.infrastructure.dto.AuthenticationResponse;
 import com.josefy.nnpda.infrastructure.dto.LoginRequest;
 import com.josefy.nnpda.infrastructure.dto.RegisterRequest;
