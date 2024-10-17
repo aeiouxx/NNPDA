@@ -31,10 +31,7 @@ public class Device {
     @Column(name = "model_name", nullable = false)
     private String modelName;
 
-    @OneToMany(mappedBy = "device",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
     private List<Sensor> sensors = new ArrayList<>();
 
     public Device(String serialNumber, String modelName) {
