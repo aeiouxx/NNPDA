@@ -1,9 +1,7 @@
 package com.josefy.nnpda.dto.device;
 
-import com.josefy.nnpda.validation.SerialNumber;
+import com.josefy.nnpda.annotation.SerialNumber;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;

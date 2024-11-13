@@ -6,7 +6,7 @@ import com.josefy.nnpda.dto.sensor.SensorWithDeviceResponseDto;
 import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.User;
 import com.josefy.nnpda.service.ISensorService;
-import com.josefy.nnpda.validation.SerialNumber;
+import com.josefy.nnpda.annotation.SerialNumber;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,14 +15,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.Serial;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 

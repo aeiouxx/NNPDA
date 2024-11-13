@@ -2,6 +2,7 @@ package com.josefy.nnpda.infrastructure.utils;
 
 import java.util.function.Function;
 
+// This sucks, way too many heap allocations, just use ControllerAdvice for handling failures i guess...
 public sealed abstract class Either<A, B> permits Either.Left, Either.Right {
     private Either() {}
 

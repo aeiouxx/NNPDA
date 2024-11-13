@@ -1,5 +1,6 @@
-package com.josefy.nnpda.validation;
+package com.josefy.nnpda.annotation;
 
+import com.josefy.nnpda.validation.SerialNumberValidator;
 import jakarta.validation.Constraint;
 
 import java.lang.annotation.*;

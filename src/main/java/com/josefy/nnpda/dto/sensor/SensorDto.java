@@ -1,7 +1,7 @@
 package com.josefy.nnpda.dto.sensor;
 
 import com.josefy.nnpda.model.Sensor;
-import com.josefy.nnpda.validation.SerialNumber;
+import com.josefy.nnpda.annotation.SerialNumber;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 

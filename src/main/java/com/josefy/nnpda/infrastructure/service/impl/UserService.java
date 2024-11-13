@@ -129,6 +129,7 @@ public class UserService implements IUserService {
         userRepository.save(user);
         return Either.right(null);
     }
+
     private record TokenData(String text, String hash, Date expiration) {}
     private TokenData generateNextTokenData(Date currentTime) {
         var random = new SecureRandom();
