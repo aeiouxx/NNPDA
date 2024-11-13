@@ -7,7 +7,7 @@ import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
-import org.springframework.validation.method.ParameterValidationResult;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -37,11 +37,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<?> handleConflictException(ConflictException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-    }
-    @ExceptionHandler
-    public ResponseEntity<?> handleUncaughtException(Exception e) {
-        log.error("Uncaught exception", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -75,11 +70,31 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<?> handleInvalidTokenException(InvalidTokenException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
     }
 
     @ExceptionHandler(HttpMessageConversionException.class)
     public ResponseEntity<?> handleHttpMessageConversionException(HttpMessageConversionException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request body");
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("Invalid request body");
+    }
+
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleUncaughtException(Exception e) {
+        log.error("[BIG PROBLEM!]\tUncaught exception", e);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Something went wrong");
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException e) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(e.getMessage());
     }
 }

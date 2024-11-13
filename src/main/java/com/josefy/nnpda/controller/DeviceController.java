@@ -3,14 +3,14 @@ package com.josefy.nnpda.controller;
 import com.josefy.nnpda.dto.device.DeviceDto;
 import com.josefy.nnpda.dto.device.DeviceWithSensorSerialsDto;
 import com.josefy.nnpda.dto.device.DeviceWithSensorsDto;
+import com.josefy.nnpda.infrastructure.security.RoleExpressions;
 import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.Device;
 import com.josefy.nnpda.model.User;
 import com.josefy.nnpda.service.IDeviceService;
-import com.josefy.nnpda.validation.SerialNumber;
+import com.josefy.nnpda.annotation.SerialNumber;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,13 +18,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.function.Consumer;
+
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -124,6 +125,7 @@ public class DeviceController {
                     )
             }
     )
+    @PreAuthorize(RoleExpressions.IS_ADMIN)
     public ResponseEntity<?> create(
             @RequestBody @Valid DeviceWithSensorSerialsDto device,
             @AuthenticationPrincipal User user) {
@@ -150,6 +152,7 @@ public class DeviceController {
                     )
             }
     )
+    @PreAuthorize(RoleExpressions.IS_ADMIN)
     public ResponseEntity<?> update(
             @PathVariable @Valid @SerialNumber String serialNumber,
             @RequestBody @Valid DeviceWithSensorSerialsDto device,
@@ -173,6 +176,7 @@ public class DeviceController {
                     )
             }
     )
+    @PreAuthorize(RoleExpressions.IS_ADMIN)
     public ResponseEntity<?> delete(
             @PathVariable @Valid @SerialNumber String serialNumber,
             @AuthenticationPrincipal User user) {

@@ -6,12 +6,15 @@ import com.josefy.nnpda.infrastructure.dto.RegisterRequest;
 import com.josefy.nnpda.infrastructure.dto.ResetPasswordRequest;
 import com.josefy.nnpda.infrastructure.exceptions.NotFoundException;
 import com.josefy.nnpda.infrastructure.exceptions.UnauthorizedException;
+import com.josefy.nnpda.infrastructure.repository.IRoleRepository;
 import com.josefy.nnpda.infrastructure.repository.IUserRepository;
 import com.josefy.nnpda.infrastructure.security.JwtTokenProvider;
 import com.josefy.nnpda.infrastructure.service.IAuthenticationService;
 import com.josefy.nnpda.infrastructure.service.IUserService;
 import com.josefy.nnpda.infrastructure.utils.Either;
 import com.josefy.nnpda.infrastructure.utils.Status;
+import com.josefy.nnpda.model.Role;
+import com.josefy.nnpda.model.RoleEnum;
 import com.josefy.nnpda.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthenticationService implements IAuthenticationService {
     private final IUserRepository userRepository;
+    private final IRoleRepository roleRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     @Override
@@ -55,8 +59,9 @@ public class AuthenticationService implements IAuthenticationService {
             var message = "User with provided email already exists";
             return Either.left(new Status(message, HttpStatus.CONFLICT));
         }
+        var role = roleRepository.findByName(RoleEnum.ROLE_USER).orElseThrow(() -> new NotFoundException(Role.class));
         var encodedPassword = passwordEncoder.encode(request.password());
-        var newUser = userRepository.save(new User(request.username(), request.email(), encodedPassword));
+        var newUser = userRepository.save(new User(request.username(), request.email(), encodedPassword, role));
         var token = jwtTokenProvider.generateToken(newUser.getUsername());
         return Either.right(new AuthenticationResponse(token));
     }
