@@ -5,19 +5,19 @@ import com.josefy.nnpda.model.Role;
 import com.josefy.nnpda.model.RoleEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 @Order(1)
+@Profile("!test")
 public class RoleSeeder implements CommandLineRunner {
     private final IRoleRepository roleRepository;
+    public static final Role user = new Role(RoleEnum.ROLE_USER);
 
     private void createMissingRoles() {
         Arrays.stream(RoleEnum.values())
