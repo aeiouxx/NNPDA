@@ -6,3 +6,10 @@ spring:
     password: "test"
 jwt:
   secret: "testSecretNotEvenUsed"
+
+logging:
+  level:
+    org:
+      hibernate: DEBUG
+      springframework: DEBUG
+      testcontainers: DEBUG
