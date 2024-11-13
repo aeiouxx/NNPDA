@@ -2,6 +2,9 @@ package com.josefy.nnpda.dto.sensor;
 
 import com.josefy.nnpda.dto.device.DeviceDto;
 import com.josefy.nnpda.model.Sensor;
+import com.josefy.nnpda.validation.SerialNumber;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 
 public record SensorWithDeviceResponseDto(
         String serialNumber,
