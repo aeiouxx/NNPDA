@@ -12,7 +12,7 @@ springdoc:
     enabled: true
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/nnpda_db
+    url: jdbc:postgresql://postgres:5432/nnpda_db
     username: nnpdaUser
     password: nnpdaPassword
     driver-class-name: org.postgresql.Driver

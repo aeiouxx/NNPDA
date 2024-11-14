@@ -59,6 +59,15 @@ dependencies {
 	// Swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 }
+bootJar {
+	enabled = true
+	archiveFileName = 'nnproject.jar'
+}
+
+jar {
+	// we don't need the jar without bundled dependencies
+	enabled = false
+}
 jacoco {
 	toolVersion = "0.8.12"
 }

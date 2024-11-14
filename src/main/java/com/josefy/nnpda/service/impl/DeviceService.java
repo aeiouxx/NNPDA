@@ -11,6 +11,7 @@ import com.josefy.nnpda.repository.IDeviceRepository;
 import com.josefy.nnpda.repository.IDeviceRepositoryEager;
 import com.josefy.nnpda.repository.ISensorRepository;
 import com.josefy.nnpda.service.IDeviceService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,7 @@ public class DeviceService implements IDeviceService {
     }
 
     @Override
+    @Transactional
     public Either<Status, Device> create(DeviceWithSensorSerialsDto deviceRequest) {
         var serialNumber = deviceRequest.serialNumber();
         if (deviceRepository.existsBySerialNumber(serialNumber)) {
@@ -83,6 +85,7 @@ public class DeviceService implements IDeviceService {
     }
 
     @Override
+    @Transactional
     public Either<Status, Device> update(String oldSerialNumber, DeviceWithSensorSerialsDto request) {
         var device = deviceRepository.findBySerialNumber(oldSerialNumber)
                 .orElse(null);
@@ -116,12 +119,14 @@ public class DeviceService implements IDeviceService {
     }
 
     @Override
+    @Transactional
     public Either<Status, Void> delete(long id) {
         deviceRepository.deleteById(id);
         return Either.right(null);
     }
 
     @Override
+    @Transactional
     public Either<Status, Void> delete(String serialNumber) {
         deviceRepository.deleteBySerialNumber(serialNumber);
         return Either.right(null);
