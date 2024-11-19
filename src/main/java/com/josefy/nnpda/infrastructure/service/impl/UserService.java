@@ -5,14 +5,13 @@ import com.josefy.nnpda.infrastructure.repository.IPasswordResetTokenRepository;
 import com.josefy.nnpda.infrastructure.repository.IUserRepository;
 import com.josefy.nnpda.infrastructure.service.IEmailService;
 import com.josefy.nnpda.infrastructure.service.IUserService;
-import com.josefy.nnpda.infrastructure.utils.Hashing;
+import com.josefy.nnpda.infrastructure.utils.IHashProvider;
 import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.PasswordResetToken;
 import com.josefy.nnpda.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +28,7 @@ public class UserService implements IUserService {
     private final IPasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final IEmailService emailService;
+    private final IHashProvider hashProvider;
     private static Status USER_NOT_FOUND
             = new Status("User not found.", HttpStatus.NOT_FOUND);
 
@@ -100,7 +100,7 @@ public class UserService implements IUserService {
     @Override
     @Transactional
     public Either<Status, Void> resetPassword(String token, String password) {
-        var hash = Hashing.sha256(token);
+        var hash = hashProvider.hash(token);
         PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenHash(hash).orElse(null);
         if (resetToken == null || resetToken.isExpired(new Date())) {
             return Either.left(
@@ -136,7 +136,7 @@ public class UserService implements IUserService {
         var bytes = new byte[64];
         random.nextBytes(bytes);
         var text = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        String hash = Hashing.sha256(text);
+        String hash = hashProvider.hash(text);
         var expiration = new Date(currentTime.getTime() + PasswordResetToken.EXPIRATION_MILLIS);
         return new TokenData(text, hash, expiration);
     }

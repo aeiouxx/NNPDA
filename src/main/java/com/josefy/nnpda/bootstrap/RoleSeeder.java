@@ -17,7 +17,6 @@ import java.util.Arrays;
 @Profile("!test")
 public class RoleSeeder implements CommandLineRunner {
     private final IRoleRepository roleRepository;
-    public static final Role user = new Role(RoleEnum.ROLE_USER);
 
     private void createMissingRoles() {
         Arrays.stream(RoleEnum.values())

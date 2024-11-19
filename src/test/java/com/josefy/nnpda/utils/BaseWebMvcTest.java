@@ -1,7 +1,7 @@
 package com.josefy.nnpda.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.josefy.nnpda.config.SecurityConfig;
+import com.josefy.nnpda.config.UserSecurityConfig;
 import com.josefy.nnpda.infrastructure.repository.IRoleRepository;
 import com.josefy.nnpda.infrastructure.security.JwtTokenProvider;
 import com.josefy.nnpda.infrastructure.service.IUserService;
@@ -23,7 +23,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.when;
 
 @WebMvcTest
-@Import(SecurityConfig.class)
+@Import(UserSecurityConfig.class)
 public  class BaseWebMvcTest {
     @Autowired
     protected MockMvc mockMvc;

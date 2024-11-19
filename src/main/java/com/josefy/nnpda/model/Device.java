@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.LazyToOne;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,9 @@ public class Device {
 
     @Column(name = "model_name", nullable = false)
     private String modelName;
+
+    @OneToOne(mappedBy = "device", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private DeviceCredential deviceCredential;
 
     @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
     private List<Sensor> sensors = new ArrayList<>();

@@ -1,11 +1,12 @@
 package com.josefy.nnpda.service.impl;
 
-import com.josefy.nnpda.dto.device.DeviceDto;
 import com.josefy.nnpda.dto.device.DeviceWithSensorSerialsDto;
-import com.josefy.nnpda.dto.device.DeviceWithSensorsDto;
+import com.josefy.nnpda.infrastructure.repository.IDeviceCredentialRepository;
 import com.josefy.nnpda.infrastructure.utils.Either;
+import com.josefy.nnpda.infrastructure.utils.IHashProvider;
 import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.Device;
+import com.josefy.nnpda.model.DeviceCredential;
 import com.josefy.nnpda.model.Sensor;
 import com.josefy.nnpda.repository.IDeviceRepository;
 import com.josefy.nnpda.repository.IDeviceRepositoryEager;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -24,6 +26,8 @@ public class DeviceService implements IDeviceService {
     private final IDeviceRepository deviceRepository;
     private final IDeviceRepositoryEager deviceRepositoryEager;
     private final ISensorRepository sensorRepository;
+    private final IDeviceCredentialRepository deviceCredentialRepository;
+    private final IHashProvider hashProvider;
 
     @Override
     public Iterable<Device> findAll(boolean withSensors) {
@@ -57,6 +61,8 @@ public class DeviceService implements IDeviceService {
     @Transactional
     public Either<Status, Device> create(DeviceWithSensorSerialsDto deviceRequest) {
         var serialNumber = deviceRequest.serialNumber();
+
+        Device toSave = new Device();
         if (deviceRepository.existsBySerialNumber(serialNumber)) {
             return Either.left(new Status("Device with serial number '%s' already exists".formatted(serialNumber), HttpStatus.CONFLICT));
         }
@@ -70,11 +76,23 @@ public class DeviceService implements IDeviceService {
             var device = new Device(serialNumber, deviceRequest.modelName());
             sensors.forEach(sensor -> sensor.setDevice(device));
             device.setSensors(sensors);
-            return Either.right(deviceRepository.save(device));
         }
         else {
-            return Either.right(deviceRepository.save(new Device(serialNumber, deviceRequest.modelName())));
+            toSave.setSerialNumber(serialNumber);
+            toSave.setModelName(deviceRequest.modelName());
         }
+        var credentials = generateCredentials(toSave, deviceRequest.apiKeyHash());
+        toSave.setDeviceCredential(credentials);
+        return Either.right(deviceRepository.save(toSave));
+    }
+
+    private DeviceCredential generateCredentials(Device toSave, String keyHash) {
+        var credentials = new DeviceCredential();
+        credentials.setDevice(toSave);
+        credentials.setApiKeyHash(keyHash);
+        credentials.setDerivedId(hashProvider.hmac(toSave.getSerialNumber(), keyHash));
+        credentials.setCreatedAt(Instant.now());
+        return credentials;
     }
 
     private String getMissingSerialNumbers(List<String> requested, List<Sensor> found) {

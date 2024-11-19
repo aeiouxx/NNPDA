@@ -18,7 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,6 +34,7 @@ import java.util.stream.StreamSupport;
 @RequestMapping("/devices")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize(RoleExpressions.IS_ADMIN)
 public class DeviceController {
     private final IDeviceService deviceService;
     @GetMapping
@@ -125,7 +125,6 @@ public class DeviceController {
                     )
             }
     )
-    @PreAuthorize(RoleExpressions.IS_ADMIN)
     public ResponseEntity<?> create(
             @RequestBody @Valid DeviceWithSensorSerialsDto device,
             @AuthenticationPrincipal User user) {
@@ -152,7 +151,6 @@ public class DeviceController {
                     )
             }
     )
-    @PreAuthorize(RoleExpressions.IS_ADMIN)
     public ResponseEntity<?> update(
             @PathVariable @Valid @SerialNumber String serialNumber,
             @RequestBody @Valid DeviceWithSensorSerialsDto device,
@@ -176,7 +174,6 @@ public class DeviceController {
                     )
             }
     )
-    @PreAuthorize(RoleExpressions.IS_ADMIN)
     public ResponseEntity<?> delete(
             @PathVariable @Valid @SerialNumber String serialNumber,
             @AuthenticationPrincipal User user) {
