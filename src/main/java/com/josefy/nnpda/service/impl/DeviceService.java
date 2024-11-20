@@ -1,6 +1,6 @@
 package com.josefy.nnpda.service.impl;
 
-import com.josefy.nnpda.dto.device.DeviceWithSensorSerialsDto;
+import com.josefy.nnpda.dto.device.CreateDeviceWithSensorSerialsDto;
 import com.josefy.nnpda.infrastructure.repository.IDeviceCredentialRepository;
 import com.josefy.nnpda.infrastructure.utils.Either;
 import com.josefy.nnpda.infrastructure.utils.IHashProvider;
@@ -59,7 +59,7 @@ public class DeviceService implements IDeviceService {
 
     @Override
     @Transactional
-    public Either<Status, Device> create(DeviceWithSensorSerialsDto deviceRequest) {
+    public Either<Status, Device> create(CreateDeviceWithSensorSerialsDto deviceRequest) {
         var serialNumber = deviceRequest.serialNumber();
 
         Device toSave = new Device();
@@ -89,7 +89,7 @@ public class DeviceService implements IDeviceService {
     private DeviceCredential generateCredentials(Device toSave, String keyHash) {
         var credentials = new DeviceCredential();
         credentials.setDevice(toSave);
-        credentials.setApiKeyHash(keyHash);
+        credentials.setApiKey(keyHash);
         credentials.setDerivedId(hashProvider.hmac(toSave.getSerialNumber(), keyHash));
         credentials.setCreatedAt(Instant.now());
         return credentials;
@@ -104,10 +104,10 @@ public class DeviceService implements IDeviceService {
 
     @Override
     @Transactional
-    public Either<Status, Device> update(String oldSerialNumber, DeviceWithSensorSerialsDto request) {
-        var device = deviceRepository.findBySerialNumber(oldSerialNumber)
+    public Either<Status, Device> update(String oldSerialNumber, CreateDeviceWithSensorSerialsDto request) {
+        var toSave = deviceRepository.findBySerialNumber(oldSerialNumber)
                 .orElse(null);
-        if (device == null) {
+        if (toSave == null) {
             return Either.left(new Status("Device with serial number '%s' does not exist.".formatted(oldSerialNumber),
                     HttpStatus.NOT_FOUND));
         }
@@ -124,16 +124,18 @@ public class DeviceService implements IDeviceService {
             }
             // todo: Do we unset the old sensors?
             // todo: Do we remove the old sensors completely?
-            device.setSerialNumber(request.serialNumber());
-            device.setModelName(request.modelName());
-            device.setSensors(sensors);
-            sensors.forEach(sensor -> sensor.setDevice(device));
+            toSave.setSerialNumber(request.serialNumber());
+            toSave.setModelName(request.modelName());
+            toSave.setSensors(sensors);
+            sensors.forEach(sensor -> sensor.setDevice(toSave));
         }
         else {
-            device.setSerialNumber(request.serialNumber());
-            device.setModelName(request.modelName());
+            toSave.setSerialNumber(request.serialNumber());
+            toSave.setModelName(request.modelName());
         }
-        return Either.right(deviceRepository.save(device));
+        var credentials = generateCredentials(toSave, request.apiKeyHash());
+        toSave.setDeviceCredential(credentials);
+        return Either.right(deviceRepository.save(toSave));
     }
 
     @Override

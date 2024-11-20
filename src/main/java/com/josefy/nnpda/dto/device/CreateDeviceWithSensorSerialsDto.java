@@ -6,10 +6,14 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-public record DeviceWithSensorSerialsDto(
+public record CreateDeviceWithSensorSerialsDto(
         @Schema(description = "Device serial number", example = "DEADBEEF1234")
         @SerialNumber
         String serialNumber,
+
+        @Schema(description = "API key hash", example = "oasdfgh9iwerht4391082")
+        @NotNull(message = "API key hash is required.")
+        String apiKeyHash,
 
         @Schema(description = "Device model name", example = "ESP32")
         @NotNull(message = "Model name is required.")

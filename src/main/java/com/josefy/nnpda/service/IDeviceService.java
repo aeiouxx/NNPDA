@@ -1,6 +1,7 @@
 package com.josefy.nnpda.service;
 
 
+import com.josefy.nnpda.dto.device.CreateDeviceWithSensorSerialsDto;
 import com.josefy.nnpda.dto.device.DeviceDto;
 import com.josefy.nnpda.dto.device.DeviceWithSensorSerialsDto;
 import com.josefy.nnpda.infrastructure.utils.Either;
@@ -13,8 +14,8 @@ public interface IDeviceService {
     Either<Status, Device> findBySerialNumber(String serialNumber, boolean withSensors);
     Iterable<Device> findByModelName(String modelName, boolean withSensors);
 
-    Either<Status, Device> create(DeviceWithSensorSerialsDto device);
-    Either<Status, Device> update(String oldSerialNumber, DeviceWithSensorSerialsDto device);
+    Either<Status, Device> create(CreateDeviceWithSensorSerialsDto device);
+    Either<Status, Device> update(String oldSerialNumber, CreateDeviceWithSensorSerialsDto device);
     Either<Status, Void> delete(long id);
     Either<Status, Void> delete(String serialNumber);
 }

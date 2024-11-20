@@ -1,5 +1,6 @@
 package com.josefy.nnpda.controller;
 
+import com.josefy.nnpda.dto.device.CreateDeviceWithSensorSerialsDto;
 import com.josefy.nnpda.dto.device.DeviceDto;
 import com.josefy.nnpda.dto.device.DeviceWithSensorSerialsDto;
 import com.josefy.nnpda.dto.device.DeviceWithSensorsDto;
@@ -113,7 +114,7 @@ public class DeviceController {
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Device data",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = DeviceWithSensorSerialsDto.class))),
+                    content = @Content(schema = @Schema(implementation = CreateDeviceWithSensorSerialsDto.class))),
             responses = {
                     @ApiResponse(
                             responseCode = "201",
@@ -126,7 +127,7 @@ public class DeviceController {
             }
     )
     public ResponseEntity<?> create(
-            @RequestBody @Valid DeviceWithSensorSerialsDto device,
+            @RequestBody @Valid CreateDeviceWithSensorSerialsDto device,
             @AuthenticationPrincipal User user) {
         return deviceService.create(device)
                 .fold(Status::toResponseEntity,
@@ -139,7 +140,7 @@ public class DeviceController {
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Device data",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = DeviceWithSensorSerialsDto.class))),
+                    content = @Content(schema = @Schema(implementation = CreateDeviceWithSensorSerialsDto.class))),
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -153,7 +154,7 @@ public class DeviceController {
     )
     public ResponseEntity<?> update(
             @PathVariable @Valid @SerialNumber String serialNumber,
-            @RequestBody @Valid DeviceWithSensorSerialsDto device,
+            @RequestBody @Valid CreateDeviceWithSensorSerialsDto device,
             @AuthenticationPrincipal User user) {
         return deviceService.update(serialNumber, device)
                 .fold(Status::toResponseEntity,

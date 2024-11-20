@@ -20,8 +20,8 @@ public class DeviceCredential {
     @JoinColumn(name = "device_id", nullable = false, unique = true)
     private Device device;
 
-    @Column(name = "api_key_hash", nullable = false, unique = true)
-    private String apiKeyHash;
+    @Column(name = "api_key", nullable = false, unique = true)
+    private String apiKey;
 
     @Column(name = "derived_id", nullable = false, unique = true)
     private String derivedId;

@@ -20,7 +20,7 @@ public class ApiKeySecurityConfig {
     @Bean
     public SecurityFilterChain deviceSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher(new AntPathRequestMatcher("/devices/**/measurements/**"))
+                .securityMatcher(new AntPathRequestMatcher("/devices/measurements/**"))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth

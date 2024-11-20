@@ -36,7 +36,7 @@ public class UserSecurityConfig {
         http
                 // Use a negated request matcher to exclude the measurements endpoint from the security configuration
                 // This is done to allow the measurements endpoint to be accessed with a different authentication method
-                .securityMatcher(new NegatedRequestMatcher(new AntPathRequestMatcher("/devices/**/measurements/**")))
+                .securityMatcher(new NegatedRequestMatcher(new AntPathRequestMatcher("/devices/measurements/**")))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**",

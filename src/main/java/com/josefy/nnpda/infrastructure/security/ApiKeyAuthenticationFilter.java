@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
@@ -24,6 +23,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @Slf4j
 public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
+    // todo: We expose the serial number in our API endpoint anyway lmao
     private final IDeviceCredentialService deviceCredentialsService;
     private final IHashProvider hashProvider;
 
@@ -43,10 +43,10 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or revoked API key");
             return;
         }
-        String keyHash = credential.get().getApiKeyHash();
+        String key = credential.get().getApiKey();
         try (var inputStream = wrappedRequest.getInputStream()) {
-            if (!hashProvider.isHmacValid(wrappedRequest.getInputStream(), keyHash, hmac)) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid soignature");
+            if (!hashProvider.isHmacValid(wrappedRequest.getInputStream(), key, hmac)) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid signature");
                 return;
             }
         }

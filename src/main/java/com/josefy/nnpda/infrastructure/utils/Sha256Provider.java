@@ -1,5 +1,6 @@
 package com.josefy.nnpda.infrastructure.utils;
 
+import org.eclipse.angus.mail.util.BASE64EncoderStream;
 import org.springframework.stereotype.Component;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -12,6 +13,8 @@ import java.util.Base64;
 
 @Component
 public class Sha256Provider implements IHashProvider {
+    private static int BUFFER_SIZE = 4096;
+
     public String hash(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -30,6 +33,21 @@ public class Sha256Provider implements IHashProvider {
 
     @Override
     public boolean isHmacValid(InputStream input, String key, String hash) throws IOException {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(secretKey);
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int bytesRead;
+            while ((bytesRead = input.read(buffer)) != -1) {
+                mac.update(buffer, 0, bytesRead);
+            }
+            byte[] bytes = mac.doFinal();
+            String result =  Base64.getEncoder().encodeToString(bytes);
+            return result.equals(hash);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while validating provided hash", e);
+        }
     }
 
     public String hmac(String input, String key) {
