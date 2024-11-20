@@ -8,25 +8,43 @@ import {
   MenuItem,
   Select,
   Typography,
+  FormHelperText,
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
-import axios from 'axios';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { DeviceDto, UserDto } from '../../../client/Types';
-import { fetchDevices } from '../../../service/DeviceService';
 import { fetchUsers } from '../../../service/UserService';
-import { assignDevice, AssignDeviceParameters, unassignDevice } from '../../../service/UserDeviceService';
-import { formatDeviceLabel } from '../Sensors/SensorsForm';
+import { fetchDevices } from '../../../service/DeviceService';
+import { assignDevice, unassignDevice } from '../../../service/UserDeviceService';
+
+export interface AssignDeviceParameters {
+  username: string;
+  serialNumber: string;
+}
+
+
+const assignDeviceSchema = z.object({
+  username: z.string().min(1, "User is required"),
+  serialNumber: z.string().min(1, "Device is required"),
+});
 
 const AssignDeviceForm: React.FC = () => {
   const [users, setUsers] = useState<UserDto[]>([]);
   const [devices, setDevices] = useState<DeviceDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { control, handleSubmit, formState: { isSubmitting }, reset } = useForm<AssignDeviceParameters>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<AssignDeviceParameters>({
     defaultValues: {
       username: '',
       serialNumber: '',
     },
+    resolver: zodResolver(assignDeviceSchema), // Use Zod resolver for validation
   });
 
   useEffect(() => {
@@ -34,7 +52,7 @@ const AssignDeviceForm: React.FC = () => {
       try {
         const [usersResponse, devicesResponse] = await Promise.all([
           fetchUsers(),
-          fetchDevices(),
+            fetchDevices(),
         ]);
         setUsers(usersResponse);
         setDevices(devicesResponse);
@@ -49,24 +67,28 @@ const AssignDeviceForm: React.FC = () => {
   const onAssign = async (data: AssignDeviceParameters) => {
     setIsLoading(true);
     try {
-        await assignDevice(data);
+      await assignDevice(data); 
+      alert('Device assigned successfully!');
     } catch (error) {
-    } 
-    finally {
-        reset();
-        setIsLoading(false);
+      console.error('Error assigning device', error);
+      alert('Failed to assign device.');
+    } finally {
+      reset();
+      setIsLoading(false);
     }
   };
 
   const onUnassign = async (data: AssignDeviceParameters) => {
     setIsLoading(true);
     try {
-        await unassignDevice(data);
+      await unassignDevice(data); 
+      alert('Device unassigned successfully!');
     } catch (error) {
-    } 
-    finally {
-        reset();
-        setIsLoading(false);
+      console.error('Error unassigning device', error);
+      alert('Failed to unassign device.');
+    } finally {
+      reset();
+      setIsLoading(false);
     }
   };
 
@@ -79,7 +101,7 @@ const AssignDeviceForm: React.FC = () => {
         <Grid container spacing={2}>
           {/* User Dropdown */}
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
+            <FormControl fullWidth error={!!errors.username}>
               <InputLabel id="user-label">User</InputLabel>
               <Controller
                 name="username"
@@ -98,12 +120,15 @@ const AssignDeviceForm: React.FC = () => {
                   </Select>
                 )}
               />
+              {errors.username && (
+                <FormHelperText>{errors.username.message}</FormHelperText>
+              )}
             </FormControl>
           </Grid>
 
           {/* Device Dropdown */}
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
+            <FormControl fullWidth error={!!errors.serialNumber}>
               <InputLabel id="device-label">Device</InputLabel>
               <Controller
                 name="serialNumber"
@@ -116,12 +141,15 @@ const AssignDeviceForm: React.FC = () => {
                   >
                     {devices.map((device) => (
                       <MenuItem key={device.serialNumber} value={device.serialNumber}>
-                        {formatDeviceLabel(device)}
+                        {device.modelName} - {device.serialNumber}
                       </MenuItem>
                     ))}
                   </Select>
                 )}
               />
+              {errors.serialNumber && (
+                <FormHelperText>{errors.serialNumber.message}</FormHelperText>
+              )}
             </FormControl>
           </Grid>
 
