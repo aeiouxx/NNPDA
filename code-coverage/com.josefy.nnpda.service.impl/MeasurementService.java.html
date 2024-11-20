@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MeasurementService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">nnproject</a> &gt; <a href="index.source.html" class="el_package">com.josefy.nnpda.service.impl</a> &gt; <span class="el_source">MeasurementService.java</span></div><h1>MeasurementService.java</h1><pre class="source lang-java linenums">package com.josefy.nnpda.service.impl;
+
+import com.josefy.nnpda.dto.measurement.DeviceMeasurementDto;
+import com.josefy.nnpda.dto.measurement.SensorMeasurementDto;
+import com.josefy.nnpda.infrastructure.exceptions.BadRequestException;
+import com.josefy.nnpda.infrastructure.exceptions.NotFoundException;
+import com.josefy.nnpda.infrastructure.utils.Status;
+import com.josefy.nnpda.model.Device;
+import com.josefy.nnpda.model.Measurement;
+import com.josefy.nnpda.repository.IMeasurementRepository;
+import com.josefy.nnpda.repository.ISensorRepository;
+import com.josefy.nnpda.service.IMeasurementService;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+<span class="nc" id="L24">@RequiredArgsConstructor</span>
+<span class="nc" id="L25">@Slf4j</span>
+public class MeasurementService implements IMeasurementService {
+    private final ISensorRepository sensorRepository;
+    private final IMeasurementRepository measurementRepository;
+
+    @Override
+    @Transactional
+    public Status ingestMeasurements(Device assumedSender,
+                                     DeviceMeasurementDto deviceMeasurementDto) {
+<span class="nc" id="L34">        List&lt;Measurement&gt; measurements = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">        for (SensorMeasurementDto dto : deviceMeasurementDto.measurements()) {</span>
+<span class="nc" id="L36">            var sensor = sensorRepository.findBySerialNumber(dto.serialNumber())</span>
+<span class="nc" id="L37">                    .orElseThrow(() -&gt; new NotFoundException(&quot;Sensor&quot;, &quot;serial number&quot;, dto.serialNumber()));</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">            if (!sensor.getDevice().equals(assumedSender)) {</span>
+<span class="nc" id="L39">                throw new BadRequestException(&quot;Measurements&quot;,</span>
+                        &quot;Sensor with serial number '%s' does not belong to given device.&quot;
+<span class="nc" id="L41">                        .formatted(dto.serialNumber(), assumedSender.getSerialNumber()));</span>
+            }
+<span class="nc" id="L43">            Measurement measurement = new Measurement();</span>
+<span class="nc" id="L44">            measurement.setSensor(sensor);</span>
+<span class="nc" id="L45">            measurement.setValue(dto.value());</span>
+<span class="nc" id="L46">            measurement.setTimestamp(dto.timestamp());</span>
+<span class="nc" id="L47">            measurements.add(measurement);</span>
+<span class="nc" id="L48">        }</span>
+<span class="nc" id="L49">        measurementRepository.saveAll(measurements);</span>
+<span class="nc" id="L50">        return Status.SUCCESS;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

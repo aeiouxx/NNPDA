@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DeviceService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">nnproject</a> &gt; <a href="index.source.html" class="el_package">com.josefy.nnpda.service.impl</a> &gt; <span class="el_source">DeviceService.java</span></div><h1>DeviceService.java</h1><pre class="source lang-java linenums">package com.josefy.nnpda.service.impl;
+
+import com.josefy.nnpda.dto.device.CreateDeviceWithSensorSerialsDto;
+import com.josefy.nnpda.infrastructure.repository.IDeviceCredentialRepository;
+import com.josefy.nnpda.infrastructure.utils.Either;
+import com.josefy.nnpda.infrastructure.utils.IHashProvider;
+import com.josefy.nnpda.infrastructure.utils.Status;
+import com.josefy.nnpda.model.Device;
+import com.josefy.nnpda.model.DeviceCredential;
+import com.josefy.nnpda.model.Sensor;
+import com.josefy.nnpda.repository.IDeviceRepository;
+import com.josefy.nnpda.repository.IDeviceRepositoryEager;
+import com.josefy.nnpda.repository.ISensorRepository;
+import com.josefy.nnpda.service.IDeviceService;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.List;
+
+@Service
+<span class="nc" id="L24">@RequiredArgsConstructor</span>
+public class DeviceService implements IDeviceService {
+    private final IDeviceRepository deviceRepository;
+    private final IDeviceRepositoryEager deviceRepositoryEager;
+    private final ISensorRepository sensorRepository;
+    private final IDeviceCredentialRepository deviceCredentialRepository;
+    private final IHashProvider hashProvider;
+
+    @Override
+    public Iterable&lt;Device&gt; findAll(boolean withSensors) {
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        if (withSensors) {</span>
+<span class="nc" id="L35">            return deviceRepositoryEager.findAll();</span>
+        }
+        else {
+<span class="nc" id="L38">            return deviceRepository.findAll();</span>
+        }
+    }
+    @Override
+    public Either&lt;Status, Device&gt; findById(long id, boolean withSensors) {
+<span class="nc" id="L43">        return deviceRepository.findById(id)</span>
+<span class="nc" id="L44">                .map(Either::&lt;Status, Device&gt;right)</span>
+<span class="nc" id="L45">                .orElseGet(() -&gt; Either.left(new Status(&quot;Device not found&quot;, HttpStatus.NOT_FOUND)));</span>
+    }
+
+    @Override
+    public Either&lt;Status, Device&gt; findBySerialNumber(String serialNumber, boolean withSensors) {
+<span class="nc" id="L50">        return deviceRepository.findBySerialNumber(serialNumber)</span>
+<span class="nc" id="L51">                .map(Either::&lt;Status, Device&gt;right)</span>
+<span class="nc" id="L52">                .orElseGet(() -&gt; Either.left(new Status(&quot;Device not found&quot;, HttpStatus.NOT_FOUND)));</span>
+    }
+
+    @Override
+    public Iterable&lt;Device&gt; findByModelName(String modelName, boolean withSensors) {
+<span class="nc" id="L57">        return deviceRepository.findByModelName(modelName);</span>
+    }
+
+    @Override
+    @Transactional
+    public Either&lt;Status, Device&gt; create(CreateDeviceWithSensorSerialsDto deviceRequest) {
+<span class="nc" id="L63">        var serialNumber = deviceRequest.serialNumber();</span>
+
+<span class="nc" id="L65">        Device toSave = new Device();</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (deviceRepository.existsBySerialNumber(serialNumber)) {</span>
+<span class="nc" id="L67">            return Either.left(new Status(&quot;Device with serial number '%s' already exists&quot;.formatted(serialNumber), HttpStatus.CONFLICT));</span>
+        }
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (deviceRequest.sensors() != null) {</span>
+<span class="nc" id="L70">            var sensors = sensorRepository.findBySerialNumberIn(deviceRequest.sensors());</span>
+<span class="nc" id="L71">            var missingSerialNumbers = getMissingSerialNumbers(deviceRequest.sensors(), sensors);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            if (missingSerialNumbers != null) {</span>
+<span class="nc" id="L73">                return Either.left(new Status(&quot;Sensors with serial numbers '%s' do not exist.&quot;.formatted(missingSerialNumbers),</span>
+                        HttpStatus.BAD_REQUEST));
+            }
+<span class="nc" id="L76">            var device = new Device(serialNumber, deviceRequest.modelName());</span>
+<span class="nc" id="L77">            sensors.forEach(sensor -&gt; sensor.setDevice(device));</span>
+<span class="nc" id="L78">            device.setSensors(sensors);</span>
+<span class="nc" id="L79">        }</span>
+        else {
+<span class="nc" id="L81">            toSave.setSerialNumber(serialNumber);</span>
+<span class="nc" id="L82">            toSave.setModelName(deviceRequest.modelName());</span>
+        }
+<span class="nc" id="L84">        var credentials = generateCredentials(toSave, deviceRequest.apiKeyHash());</span>
+<span class="nc" id="L85">        toSave.setDeviceCredential(credentials);</span>
+<span class="nc" id="L86">        return Either.right(deviceRepository.save(toSave));</span>
+    }
+
+    private DeviceCredential generateCredentials(Device toSave, String keyHash) {
+<span class="nc" id="L90">        var credentials = new DeviceCredential();</span>
+<span class="nc" id="L91">        credentials.setDevice(toSave);</span>
+<span class="nc" id="L92">        credentials.setApiKey(keyHash);</span>
+<span class="nc" id="L93">        credentials.setDerivedId(hashProvider.hmac(toSave.getSerialNumber(), keyHash));</span>
+<span class="nc" id="L94">        credentials.setCreatedAt(Instant.now());</span>
+<span class="nc" id="L95">        return credentials;</span>
+    }
+
+    private String getMissingSerialNumbers(List&lt;String&gt; requested, List&lt;Sensor&gt; found) {
+<span class="nc" id="L99">        return requested.stream()</span>
+<span class="nc" id="L100">                .filter(serial -&gt; found.stream().noneMatch(sensor -&gt; sensor.getSerialNumber().equals(serial)))</span>
+<span class="nc" id="L101">                .reduce((s1, s2) -&gt; s1 + &quot;, &quot; + s2)</span>
+<span class="nc" id="L102">                .orElse(null);</span>
+    }
+
+    @Override
+    @Transactional
+    public Either&lt;Status, Device&gt; update(String oldSerialNumber, CreateDeviceWithSensorSerialsDto request) {
+<span class="nc" id="L108">        var toSave = deviceRepository.findBySerialNumber(oldSerialNumber)</span>
+<span class="nc" id="L109">                .orElse(null);</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (toSave == null) {</span>
+<span class="nc" id="L111">            return Either.left(new Status(&quot;Device with serial number '%s' does not exist.&quot;.formatted(oldSerialNumber),</span>
+                    HttpStatus.NOT_FOUND));
+        }
+<span class="nc bnc" id="L114" title="All 4 branches missed.">        if (!oldSerialNumber.equals(request.serialNumber()) &amp;&amp; deviceRepository.existsBySerialNumber(request.serialNumber())) {</span>
+<span class="nc" id="L115">            return Either.left(new Status(&quot;Device with serial number '%s' already exists.&quot;.formatted(request.serialNumber()),</span>
+                    HttpStatus.CONFLICT));
+        }
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (request.sensors() != null) {</span>
+<span class="nc" id="L119">            var sensors = sensorRepository.findBySerialNumberIn(request.sensors());</span>
+<span class="nc" id="L120">            var missingSerialNumbers = getMissingSerialNumbers(request.sensors(), sensors);</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            if (missingSerialNumbers != null) {</span>
+<span class="nc" id="L122">                return Either.left(new Status(&quot;Sensors with serial numbers '%s' do not exist.&quot;.formatted(missingSerialNumbers),</span>
+                        HttpStatus.BAD_REQUEST));
+            }
+            // todo: Do we unset the old sensors?
+            // todo: Do we remove the old sensors completely?
+<span class="nc" id="L127">            toSave.setSerialNumber(request.serialNumber());</span>
+<span class="nc" id="L128">            toSave.setModelName(request.modelName());</span>
+<span class="nc" id="L129">            toSave.setSensors(sensors);</span>
+<span class="nc" id="L130">            sensors.forEach(sensor -&gt; sensor.setDevice(toSave));</span>
+<span class="nc" id="L131">        }</span>
+        else {
+<span class="nc" id="L133">            toSave.setSerialNumber(request.serialNumber());</span>
+<span class="nc" id="L134">            toSave.setModelName(request.modelName());</span>
+        }
+<span class="nc" id="L136">        var credentials = generateCredentials(toSave, request.apiKeyHash());</span>
+<span class="nc" id="L137">        toSave.setDeviceCredential(credentials);</span>
+<span class="nc" id="L138">        return Either.right(deviceRepository.save(toSave));</span>
+    }
+
+    @Override
+    @Transactional
+    public Either&lt;Status, Void&gt; delete(long id) {
+<span class="nc" id="L144">        deviceRepository.deleteById(id);</span>
+<span class="nc" id="L145">        return Either.right(null);</span>
+    }
+
+    @Override
+    @Transactional
+    public Either&lt;Status, Void&gt; delete(String serialNumber) {
+<span class="nc" id="L151">        deviceRepository.deleteBySerialNumber(serialNumber);</span>
+<span class="nc" id="L152">        return Either.right(null);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

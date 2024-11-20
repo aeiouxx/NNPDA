@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Sha256Provider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">nnproject</a> &gt; <a href="index.source.html" class="el_package">com.josefy.nnpda.infrastructure.utils</a> &gt; <span class="el_source">Sha256Provider.java</span></div><h1>Sha256Provider.java</h1><pre class="source lang-java linenums">package com.josefy.nnpda.infrastructure.utils;
+
+import org.eclipse.angus.mail.util.BASE64EncoderStream;
+import org.springframework.stereotype.Component;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+
+@Component
+<span class="fc" id="L15">public class Sha256Provider implements IHashProvider {</span>
+<span class="fc" id="L16">    private static int BUFFER_SIZE = 4096;</span>
+
+    public String hash(String input) {
+        try {
+<span class="nc" id="L20">            MessageDigest digest = MessageDigest.getInstance(&quot;SHA-256&quot;);</span>
+<span class="nc" id="L21">            byte[] encodedHash = digest.digest(</span>
+<span class="nc" id="L22">                    input.getBytes(StandardCharsets.UTF_8)</span>
+            );
+<span class="nc" id="L24">            return bytesToHex(encodedHash);</span>
+<span class="nc" id="L25">        } catch (NoSuchAlgorithmException e) {</span>
+            // This should not happen as SHA-256 is a standard algorithm
+<span class="nc" id="L27">            throw new RuntimeException(&quot;SHA-256 algorithm not found.&quot;, e);</span>
+        }
+    }
+    public boolean isHmacValid(String input, String key, String hash) {
+<span class="nc" id="L31">        return hmac(input, key).equals(hash);</span>
+    }
+
+    @Override
+    public boolean isHmacValid(InputStream input, String key, String hash) throws IOException {
+        try {
+<span class="nc" id="L37">            Mac mac = Mac.getInstance(&quot;HmacSHA256&quot;);</span>
+<span class="nc" id="L38">            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), &quot;HmacSHA256&quot;);</span>
+<span class="nc" id="L39">            mac.init(secretKey);</span>
+<span class="nc" id="L40">            byte[] buffer = new byte[BUFFER_SIZE];</span>
+            int bytesRead;
+<span class="nc bnc" id="L42" title="All 2 branches missed.">            while ((bytesRead = input.read(buffer)) != -1) {</span>
+<span class="nc" id="L43">                mac.update(buffer, 0, bytesRead);</span>
+            }
+<span class="nc" id="L45">            byte[] bytes = mac.doFinal();</span>
+<span class="nc" id="L46">            String result =  Base64.getEncoder().encodeToString(bytes);</span>
+<span class="nc" id="L47">            return result.equals(hash);</span>
+<span class="nc" id="L48">        } catch (Exception e) {</span>
+<span class="nc" id="L49">            throw new RuntimeException(&quot;Error while validating provided hash&quot;, e);</span>
+        }
+    }
+
+    public String hmac(String input, String key) {
+        try {
+<span class="nc" id="L55">            Mac mac = Mac.getInstance(&quot;HmacSHA256&quot;);</span>
+<span class="nc" id="L56">            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), &quot;HmacSHA256&quot;);</span>
+<span class="nc" id="L57">            mac.init(secretKey);</span>
+<span class="nc" id="L58">            byte[] derivedBytes = mac.doFinal(input.getBytes(StandardCharsets.UTF_8));</span>
+<span class="nc" id="L59">            return Base64.getEncoder().encodeToString(derivedBytes);</span>
+<span class="nc" id="L60">        } catch (Exception e) {</span>
+<span class="nc" id="L61">            throw new RuntimeException(&quot;Error while hashing with HMAC SHA-256.&quot;, e);</span>
+        }
+    }
+
+    private String bytesToHex(byte[] hash) {
+<span class="nc" id="L66">        StringBuilder hexString = new StringBuilder(2 * hash.length);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        for (byte b : hash) {</span>
+<span class="nc" id="L68">            String hex = String.format(&quot;%02x&quot;, b);</span>
+<span class="nc" id="L69">            hexString.append(hex);</span>
+        }
+<span class="nc" id="L71">        return hexString.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
