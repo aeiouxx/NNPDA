@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useState } from "react";
 import axios from "axios";
 import config from "../config";
-import { mapErrorToMessage } from "../utils/AxiosGetError";
+import { mapErrorToMessage } from "../client/AxiosGetError";
 
 const resetPasswordSchema = z.object({
   username: z.string().min(1, "Username is required"),

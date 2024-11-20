@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import config from '../config';
 import axios from 'axios';
-import { mapErrorToMessage } from '../utils/AxiosGetError';
+import { mapErrorToMessage } from '../client/AxiosGetError';
 
 const loginSchema =   z.object({
   username: z.string().min(1, "Username is required"),

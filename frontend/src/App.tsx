@@ -7,6 +7,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import UnathorizedPage from './pages/UnathorizedPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
+import DevicesPage from './pages/admin/Devices/DevicesManager';
+import SensorsPage from './pages/admin/Sensors/SensorsManager';
 
 const router = createBrowserRouter([
     {
@@ -39,7 +41,11 @@ const router = createBrowserRouter([
         [
             {
                 path: "devices",
-                element: <div>Admin devices</div>
+                element: <DevicesPage />
+            },
+            {
+                path: "sensors",
+                element: <SensorsPage />
             }
         ]
     },

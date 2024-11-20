@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import config from "../config";
-import { mapErrorToMessage } from "../utils/AxiosGetError";
+import { mapErrorToMessage } from "../client/AxiosGetError";
 
 const changePasswordSchema = z.object({
   token: z.string().min(1, "Token is required"),
