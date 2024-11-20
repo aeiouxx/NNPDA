@@ -7,6 +7,8 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 5173
+RUN npm run build
+RUN npm install -g server
+EXPOSE 5000
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["server", "-s", "build", "-l", "5000"]

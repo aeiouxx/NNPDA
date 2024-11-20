@@ -72,4 +72,23 @@ public class AuthenticationController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request){
         return authenticationService.login(request).fold(Status::toResponseEntity, ResponseEntity::ok);
     }
+
+
+    record TokenToValidate(String token) {}
+    @PostMapping(value = "/validate-token")
+    @Operation(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Token to validate",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = TokenToValidate.class))),
+            responses = {
+                    @ApiResponse(
+                            description = "Token is valid",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
+            }
+    )
+    public ResponseEntity<?> validateToken(@RequestBody TokenToValidate token) {
+        return authenticationService.validateToken(token.token()).fold(Status::toResponseEntity, ResponseEntity::ok);
+    }
 }

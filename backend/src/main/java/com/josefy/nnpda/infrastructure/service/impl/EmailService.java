@@ -20,9 +20,8 @@ public class EmailService implements IEmailService {
     public void sendPasswordReset(String email, String token) {
         String subject = "Reset hesla";
         String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
-        String resetUrl = "https://moje-domena.cz/reset-password?token=" + encodedToken;
         String body = "Dobrý den,\n\n" +
-                "Pro reset hesla klikněte na následující odkaz:\n" + resetUrl + "\n\n" +
+                "Pro reset hesla použijte následující token:\n" + encodedToken + "\n\n" +
                 "Pokud jste o reset hesla nežádali, prosím ignorujte tento email.\n\n" +
                 "S pozdravem,\n" +
                 "Já";
