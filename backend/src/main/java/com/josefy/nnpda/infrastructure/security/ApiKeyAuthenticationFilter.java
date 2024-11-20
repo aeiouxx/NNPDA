@@ -33,7 +33,15 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
         var wrappedRequest = new ContentCachingRequestWrapper(request);
         String derivedId = wrappedRequest.getHeader("X-DERIVED-ID");
         String hmac = wrappedRequest.getHeader("X-HMAC-SIG");
-        if (derivedId == null || hmac == null)
+        log.info("Request to: " + wrappedRequest.getRequestURI());
+        log.info("Servlet path: " + wrappedRequest.getServletPath());
+
+        if (!wrappedRequest.getRequestURI().contains("/devices/measurements")) {
+            filterChain.doFilter(wrappedRequest, response);
+            return;
+        }
+
+        if (derivedId == null|| hmac == null)
         {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing authentication headers");
             return;

@@ -4,6 +4,7 @@ import com.josefy.nnpda.infrastructure.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -24,9 +25,18 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 @RequiredArgsConstructor
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
+@Order(2)
 public class UserSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
+
+    private static String DONT_RUN_FILTER_PATH = "api/devices/measurements/**";
+
+    private static String[] NO_AUTH_PATHS = new String[] {
+        "/auth/**", "/swagger-ui/**", "/v3/api-docs/**",
+        "/user/password-reset-request", "/user/change-password-token"
+    };
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -34,13 +44,10 @@ public class UserSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Use a negated request matcher to exclude the measurements endpoint from the security configuration
-                // This is done to allow the measurements endpoint to be accessed with a different authentication method
-                .securityMatcher(new NegatedRequestMatcher(new AntPathRequestMatcher("/devices/measurements/**")))
+//                .securityMatcher(new NegatedRequestMatcher(ApiKeySecurityConfig.TARGET_MATCHER))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**",
-                                        "/user/password-reset-request", "/user/change-password-token").permitAll()
+                        auth.requestMatchers(NO_AUTH_PATHS).permitAll()
                             .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
