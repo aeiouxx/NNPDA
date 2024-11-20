@@ -51,8 +51,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ( {children} ) => {
     const login = async (token: string) => {
         localStorage.setItem("jwtToken", token);
         const { isValid, user } = await validateTokenAsync(token);
-        console.log("isValid: ", isValid);
-
         if (isValid && user) {
             setIsAuthenticated(true);
             setUserDetails(user);
@@ -71,6 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ( {children} ) => {
 
     useEffect(() => {
         const token = localStorage.getItem("jwtToken");
+        console.log("Token: ", token);
         if (token) {
             validateTokenAsync(token).then((result) => {
                 setIsAuthenticated(result.isValid);
@@ -81,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ( {children} ) => {
                 }
             })
         }
-    })
+    }, []);
 
     return (
         <AuthContext.Provider value= {{ isAuthenticated, user: userDetails, login, logout }}>

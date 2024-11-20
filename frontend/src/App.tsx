@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import NotFoundPage from './pages/NotFoundPage';
 import UnathorizedPage from './pages/UnathorizedPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import ChangePasswordPage from './pages/ChangePasswordPage';
 
 const router = createBrowserRouter([
     {
@@ -17,8 +18,8 @@ const router = createBrowserRouter([
         element: <ResetPasswordPage />
     },
     {
-        path: "/change-password",
-        // element: <ChangePasswordPage />
+        path: "/change-password-token",
+        element: <ChangePasswordPage />
     },
     {
         path: "/me",

@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, useLocation, Outlet, useNavigate } from "react-router-dom";
+import Header from "./Header";
 
 interface ProtectedRouteProps {
   allowedRoles: string[];
@@ -33,7 +34,17 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ allowedRoles }) => {
 
   return (
     <div className="flex h-screen flex-col">
-      <Outlet />
+      <Header 
+        isAuthenticated={isAuthenticated}
+        onLogout={onLogout}
+        user={user}
+        />
+      <div className="flex flex-1 flex-col mt-16 w-screen">
+        <main id="page-wrapper"
+          className="flex-1 border-x-2 border-y-2">
+            <Outlet />
+          </main>
+      </div>
     </div>
   );
 };
