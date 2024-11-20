@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: spring-boot
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JWT_SECRET
+      - MAIL_USERNAME
+      - MAIL_PASSWORD
+    depends_on:
+      - db
+      # db:
+        # condition: service_healthy
+    networks:
+      - nnpda-network
+  db:
+    container_name: postgres
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: nnpda_db
+      POSTGRES_USER: nnpdaUser
+      POSTGRES_PASSWORD: nnpdaPassword
+    ports:
+      - 5432:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - nnpda-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
+    container_name: elastic
+    environment:
+      - discovery.type=single-node
+    ports:
+      - 9200:9200
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - nnpda-network
+
+  logstash:
+    build:
+      context: ./services/logstash
+      dockerfile: Dockerfile
+    container_name: logstash
+    volumes:
+      - ./services/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - elasticsearch
+      - db
+    networks:
+      - nnpda-network
+
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.16.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - nnpda-network
+
+
+volumes:
+  db_data:
+  es_data:
+
+networks:
+  nnpda-network:
+    driver: bridge
