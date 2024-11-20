@@ -29,7 +29,7 @@ public class AdminSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN).get();
-        var admin = new User("admin", "st55776@upce.cz", passwordEncoder.encode("admin"),
+        var admin = new User("admin", "vladimir.josefy@student.upce.cz", passwordEncoder.encode("admin"),
                 adminRole);
         if (!userRepository.existsByUsername(admin.getUsername())) {
                 userRepository.save(admin);
