@@ -16,4 +16,6 @@ public interface ISensorRepository extends JpaRepository<Sensor, Long> {
     public void deleteById(Long id);
 
     public boolean existsBySerialNumber(String serialNumber);
+
+    public List<Sensor> findByDeviceSerialNumber(String deviceSerialNumber);
 }

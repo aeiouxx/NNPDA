@@ -3,6 +3,7 @@ package com.josefy.nnpda.controller;
 import com.josefy.nnpda.dto.sensor.SensorDto;
 import com.josefy.nnpda.dto.sensor.SensorWithDeviceDto;
 import com.josefy.nnpda.dto.sensor.SensorWithDeviceResponseDto;
+import com.josefy.nnpda.infrastructure.security.RoleExpressions;
 import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.Sensor;
 import com.josefy.nnpda.model.User;
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +32,7 @@ import java.util.stream.StreamSupport;
 @RequestMapping("/sensors")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize(RoleExpressions.IS_ADMIN)
 public class SensorController {
     private final ISensorService sensorService;
 

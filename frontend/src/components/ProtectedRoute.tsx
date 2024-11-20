@@ -1,10 +1,16 @@
 import { FC } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth, UserDetails } from "../context/AuthContext";
 import { Navigate, useLocation, Outlet, useNavigate } from "react-router-dom";
 import Header from "./Header";
+import Sidebar from "./Sidebar";
 
 interface ProtectedRouteProps {
   allowedRoles: string[];
+}
+
+export interface ProtectedContext {
+  isAuthenticated: boolean;
+  user: UserDetails | null;
 }
 
 export const ProtectedRoute: FC<ProtectedRouteProps> = ({ allowedRoles }) => {
@@ -39,10 +45,13 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ allowedRoles }) => {
         onLogout={onLogout}
         user={user}
         />
-      <div className="flex flex-1 flex-col mt-16 w-screen">
+      <div className="flex flex-1 flex-col mt-10 w-screen">
+        <Sidebar 
+          isAuthenticated={isAuthenticated}
+          user={user} />
         <main id="page-wrapper"
-          className="flex-1 border-x-2 border-y-2">
-            <Outlet />
+          className="flex-1 ml-36">
+            <Outlet context={{isAuthenticated, user}} />
           </main>
       </div>
     </div>

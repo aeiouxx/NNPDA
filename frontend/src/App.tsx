@@ -10,6 +10,7 @@ import ChangePasswordPage from './pages/ChangePasswordPage';
 import DevicesPage from './pages/admin/Devices/DevicesManager';
 import SensorsPage from './pages/admin/Sensors/SensorsManager';
 import AssignDeviceForm from './pages/admin/Devices/AssignDeviceForm';
+import SensorsToKibana from './pages/user/SensorsToKibana';
 
 const router = createBrowserRouter([
     {
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
             {
                 path: "home",
                 element: <div>This is home</div>
+            },
+            {
+                path: "sensors",
+                element: <SensorsToKibana />
             }
         ]
     },

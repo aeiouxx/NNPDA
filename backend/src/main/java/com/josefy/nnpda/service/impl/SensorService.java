@@ -118,4 +118,8 @@ public class SensorService implements ISensorService {
         return Either.right(null);
     }
 
+    @Override
+    public Iterable<Sensor> findByDevice(String deviceSerialNumber) {
+        return sensorRepository.findByDeviceSerialNumber(deviceSerialNumber);
+    }
 }

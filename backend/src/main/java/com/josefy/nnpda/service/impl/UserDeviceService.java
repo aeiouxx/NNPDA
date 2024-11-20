@@ -1,13 +1,16 @@
 package com.josefy.nnpda.service.impl;
 
+import com.josefy.nnpda.dto.sensor.SensorWithDeviceResponseDto;
 import com.josefy.nnpda.infrastructure.exceptions.NotFoundException;
 import com.josefy.nnpda.infrastructure.repository.IUserRepository;
 import com.josefy.nnpda.infrastructure.utils.Either;
 import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.Device;
+import com.josefy.nnpda.model.Sensor;
 import com.josefy.nnpda.model.User;
 import com.josefy.nnpda.model.UserDevice;
 import com.josefy.nnpda.repository.IDeviceRepository;
+import com.josefy.nnpda.repository.IDeviceRepositoryEager;
 import com.josefy.nnpda.repository.IUserDeviceRepository;
 import com.josefy.nnpda.service.IUserDeviceService;
 import jakarta.transaction.Transactional;
@@ -21,12 +24,33 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserDeviceService implements IUserDeviceService {
     private final IDeviceRepository deviceRepository;
+    private final IDeviceRepositoryEager deviceRepositoryEager;
     private final IUserDeviceRepository userDeviceRepository;
     private final IUserRepository userRepository;
 
+
     @Override
-    public List<UserDevice> findAllForUser(User user) {
-        return userDeviceRepository.findByUser(user);
+    public List<Device> findAssignedDevicesByUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User", "username", username));
+        var devices = userDeviceRepository.findByUsername(user.getUsername());
+        return devices;
+    }
+
+    @Override
+    public List<SensorWithDeviceResponseDto> findSensorsByUserDevice(String username, String deviceSerialNumber) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User", "username", username));
+        if (!userDeviceRepository.existsByUserAndSerialNumber(user, deviceSerialNumber)) {
+            throw new NotFoundException("Device", "serialNumber", deviceSerialNumber);
+        }
+        Device device = deviceRepository.findBySerialNumber(deviceSerialNumber)
+                .orElseThrow(() -> new NotFoundException("Device", "serialNumber", deviceSerialNumber));
+        return device
+                .getSensors()
+                .stream()
+                .map(SensorWithDeviceResponseDto::fromEntity)
+                .toList();
     }
 
     @Override

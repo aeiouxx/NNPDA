@@ -65,6 +65,7 @@ const AuthPage = () => {
         : {username:data.username, email:data.email, password: data.password}
 
       const response = await axios.post(`${config.authBaseUrl}${endpoint}`, body);
+      console.log("Registration successful");
       var token = response.data.token;
       login(token);
       navigate(from);

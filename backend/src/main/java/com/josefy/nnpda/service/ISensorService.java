@@ -15,4 +15,9 @@ public interface ISensorService {
     Either<Status, Sensor> update(String oldSerialNumber, SensorWithDeviceDto request);
     Either<Status, Void> delete(long id);
     Either<Status, Void> delete(String serialNumber);
+
+
+
+
+    Iterable<Sensor> findByDevice(String deviceSerialNumber);
 }

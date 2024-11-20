@@ -11,8 +11,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface IUserDeviceRepository extends JpaRepository<UserDevice, Long> {
-    // Find all devices assigned to a specific user
-    List<UserDevice> findByUser(User user);
+
+    @Query("SELECT ud.device FROM UserDevice ud WHERE ud.user.username = :username")
+    List<Device> findByUsername(@Param("username") String username);
+
     @Modifying
     @Query("DELETE FROM UserDevice ud WHERE ud.user = :user AND ud.device.serialNumber = :serialNumber")
     void unassignDeviceFromUser(@Param("user") User user, @Param("serialNumber") String serialNumber);
