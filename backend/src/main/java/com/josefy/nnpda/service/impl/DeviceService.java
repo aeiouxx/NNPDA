@@ -1,6 +1,7 @@
 package com.josefy.nnpda.service.impl;
 
 import com.josefy.nnpda.dto.device.CreateDeviceWithSensorSerialsDto;
+import com.josefy.nnpda.dto.device.DeviceWithSensorSerialsDto;
 import com.josefy.nnpda.infrastructure.repository.IDeviceCredentialRepository;
 import com.josefy.nnpda.infrastructure.utils.Either;
 import com.josefy.nnpda.infrastructure.utils.IHashProvider;
@@ -104,7 +105,7 @@ public class DeviceService implements IDeviceService {
 
     @Override
     @Transactional
-    public Either<Status, Device> update(String oldSerialNumber, CreateDeviceWithSensorSerialsDto request) {
+    public Either<Status, Device> update(String oldSerialNumber, DeviceWithSensorSerialsDto request) {
         var toSave = deviceRepository.findBySerialNumber(oldSerialNumber)
                 .orElse(null);
         if (toSave == null) {
@@ -133,8 +134,8 @@ public class DeviceService implements IDeviceService {
             toSave.setSerialNumber(request.serialNumber());
             toSave.setModelName(request.modelName());
         }
-        var credentials = generateCredentials(toSave, request.apiKeyHash());
-        toSave.setDeviceCredential(credentials);
+//        var credentials = generateCredentials(toSave, request.apiKeyHash());
+//        toSave.setDeviceCredential(credentials);
         return Either.right(deviceRepository.save(toSave));
     }
 

@@ -58,7 +58,8 @@ public class AuthenticationService implements IAuthenticationService {
             var message = "User with provided email already exists";
             return Either.left(new Status(message, HttpStatus.CONFLICT));
         }
-        var role = roleRepository.findByName(RoleEnum.ROLE_USER).orElseThrow(() -> new NotFoundException(Role.class));
+        var role = roleRepository.findByName(RoleEnum.ROLE_USER)
+                .orElseThrow(() -> new NotFoundException(Role.class));
         var encodedPassword = passwordEncoder.encode(request.password());
         var newUser = userRepository.save(new User(request.username(), request.email(), encodedPassword, role));
         var response = createAuthenticationResponse(newUser);

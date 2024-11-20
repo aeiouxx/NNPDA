@@ -9,6 +9,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import DevicesPage from './pages/admin/Devices/DevicesManager';
 import SensorsPage from './pages/admin/Sensors/SensorsManager';
+import AssignDeviceForm from './pages/admin/Devices/AssignDeviceForm';
 
 const router = createBrowserRouter([
     {
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
             {
                 path: "sensors",
                 element: <SensorsPage />
+            },
+            {
+                path: "assign-devices",
+                element: <AssignDeviceForm />
             }
         ]
     },

@@ -1,7 +1,6 @@
 package com.josefy.nnpda.dto.sensor;
 
 import com.josefy.nnpda.model.Sensor;
-import com.josefy.nnpda.annotation.SerialNumber;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,7 +9,6 @@ public record SensorDto(
         @NotNull(message = "Name is required.")
         String name,
         @Schema(description = "Serial number of sensor", example = "DEADBEEF1234")
-        @SerialNumber
         String serialNumber
 ) {
 

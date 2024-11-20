@@ -9,7 +9,6 @@ import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.Device;
 import com.josefy.nnpda.model.User;
 import com.josefy.nnpda.service.IDeviceService;
-import com.josefy.nnpda.annotation.SerialNumber;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,6 +37,7 @@ import java.util.stream.StreamSupport;
 @PreAuthorize(RoleExpressions.IS_ADMIN)
 public class DeviceController {
     private final IDeviceService deviceService;
+
     @GetMapping
     @Operation(
             summary = "Get all devices",
@@ -97,7 +97,7 @@ public class DeviceController {
     public ResponseEntity<?> getOne(
             @Parameter(description = "Include sensors in the response")
             @RequestParam(defaultValue = "false") boolean withSensors,
-            @PathVariable @Valid @SerialNumber String serialNumber,
+            @PathVariable String serialNumber,
             @AuthenticationPrincipal User user) {
         var device = deviceService.findBySerialNumber(serialNumber, withSensors);
         final Function<Device, ?> mapping = withSensors
@@ -153,8 +153,8 @@ public class DeviceController {
             }
     )
     public ResponseEntity<?> update(
-            @PathVariable @Valid @SerialNumber String serialNumber,
-            @RequestBody @Valid CreateDeviceWithSensorSerialsDto device,
+            @PathVariable String serialNumber,
+            @RequestBody @Valid DeviceWithSensorSerialsDto device,
             @AuthenticationPrincipal User user) {
         return deviceService.update(serialNumber, device)
                 .fold(Status::toResponseEntity,
@@ -176,7 +176,7 @@ public class DeviceController {
             }
     )
     public ResponseEntity<?> delete(
-            @PathVariable @Valid @SerialNumber String serialNumber,
+            @PathVariable String serialNumber,
             @AuthenticationPrincipal User user) {
         return deviceService.delete(serialNumber).fold(Status::toResponseEntity, ResponseEntity::ok);
     }

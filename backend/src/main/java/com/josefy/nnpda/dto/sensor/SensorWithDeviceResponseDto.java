@@ -6,15 +6,17 @@ import com.josefy.nnpda.model.Sensor;
 public record SensorWithDeviceResponseDto(
         String serialNumber,
         String name,
-        DeviceDto deviceDto) {
-
+        String deviceSerial,
+        String deviceName)
+{
     public static SensorWithDeviceResponseDto fromEntity(Sensor sensor) {
         var device = sensor.getDevice();
+        var deviceDto = device == null ? null : DeviceDto.fromEntity(device);
         return new SensorWithDeviceResponseDto(
                 sensor.getSerialNumber(),
                 sensor.getName(),
-                DeviceDto.fromEntity(device)
+                deviceDto == null ? null : deviceDto.serialNumber(),
+                deviceDto == null ? null : deviceDto.modelName()
         );
     }
-
 }

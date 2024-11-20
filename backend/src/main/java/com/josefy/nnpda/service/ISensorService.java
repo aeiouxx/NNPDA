@@ -6,7 +6,7 @@ import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.Sensor;
 
 public interface ISensorService {
-    Iterable<Sensor> findAll();
+    Iterable<Sensor> findAll(boolean omitDevices);
     Either<Status, Sensor> findById(long id);
     Either<Status, Sensor> findBySerialNumber(String serialNumber);
     Iterable<Sensor> findByName(String name);

@@ -23,8 +23,11 @@ public class SensorService implements ISensorService {
     private final IDeviceRepository deviceRepository;
 
     @Override
-    public Iterable<Sensor> findAll() {
-        return sensorRepository.findAll();
+    public Iterable<Sensor> findAll(boolean omitDevices) {
+        var result = omitDevices
+                ? sensorRepository.findAll()
+                : sensorRepositoryEager.findAll();
+        return result;
     }
 
     @Override

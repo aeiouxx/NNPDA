@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface IUserDeviceService {
     public List<UserDevice> findAllForUser(User user);
-    public Either<Status, Void> unassignDeviceFromUser(String serialNumber, User user);
-    public Either<Status, UserDevice> assignDeviceToUser(String serialNumber, User user);
+    public Either<Status, Void> unassignDeviceFromUser(String serialNumber, String username);
+    public Either<Status, UserDevice> assignDeviceToUser(String serialNumber, String username);
 }

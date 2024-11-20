@@ -1,10 +1,12 @@
 package com.josefy.nnpda.infrastructure.service;
 
+import com.josefy.nnpda.infrastructure.dto.UserDto;
 import com.josefy.nnpda.infrastructure.utils.Either;
 import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.User;
 
 public interface IUserService {
+    public Iterable<UserDto> findAll();
     public Either<Status, User> getById(Long id);
     public Either<Status, User> getByUsername(String username);
     public Either<Status, User> getByEmail(String email);

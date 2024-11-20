@@ -11,6 +11,10 @@ import lombok.Setter;
 @Getter @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "sensors")
+@NamedEntityGraph(
+        name = "sensor-with-device",
+        attributeNodes = @NamedAttributeNode("device")
+)
 public class Sensor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +27,7 @@ public class Sensor {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "device_id")
     private Device device;
 

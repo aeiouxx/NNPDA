@@ -1,13 +1,11 @@
 package com.josefy.nnpda.dto.device;
 
 import com.josefy.nnpda.model.Device;
-import com.josefy.nnpda.annotation.SerialNumber;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 public record DeviceDto(
         @Schema(description = "Device serial number", example = "DEADBEEF1234")
-        @SerialNumber
         String serialNumber,
         @Schema(description = "Device model name", example = "ESP32")
         @NotNull(message = "Model name is required.")

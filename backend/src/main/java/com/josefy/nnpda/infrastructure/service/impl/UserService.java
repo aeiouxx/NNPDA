@@ -1,5 +1,7 @@
 package com.josefy.nnpda.infrastructure.service.impl;
 
+import com.josefy.nnpda.infrastructure.dto.UserDto;
+import com.josefy.nnpda.infrastructure.security.RoleExpressions;
 import com.josefy.nnpda.infrastructure.utils.Either;
 import com.josefy.nnpda.infrastructure.repository.IPasswordResetTokenRepository;
 import com.josefy.nnpda.infrastructure.repository.IUserRepository;
@@ -12,6 +14,7 @@ import com.josefy.nnpda.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +34,16 @@ public class UserService implements IUserService {
     private final IHashProvider hashProvider;
     private static Status USER_NOT_FOUND
             = new Status("User not found.", HttpStatus.NOT_FOUND);
+
+    @Override
+    public Iterable<UserDto> findAll() {
+        // todo: this mapping should be done by the database
+        var users = userRepository.findAll();
+        return users
+                .stream()
+                .map(user -> new UserDto(user.getUsername(), user.getEmail()))
+                .toList();
+    }
 
     @Override
     public Either<Status, User> getById(Long id) {

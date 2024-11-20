@@ -1,10 +1,10 @@
 package com.josefy.nnpda.controller;
 
 import com.josefy.nnpda.dto.device.DeviceDto;
+import com.josefy.nnpda.infrastructure.security.RoleExpressions;
 import com.josefy.nnpda.infrastructure.utils.Status;
 import com.josefy.nnpda.model.User;
 import com.josefy.nnpda.service.IUserDeviceService;
-import com.josefy.nnpda.annotation.SerialNumber;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,8 +24,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "User Devices", description = "Manages operations concerning the user devices.")
 @Controller
-@RequestMapping("/{username}/devices")
+@RequestMapping("assign/{username}/devices")
 @RequiredArgsConstructor
+@PreAuthorize(RoleExpressions.IS_ADMIN)
 public class UserDeviceController {
     private final IUserDeviceService userDeviceService;
 
@@ -50,13 +52,10 @@ public class UserDeviceController {
     )
     public ResponseEntity<?> assignDeviceToUser(
             @PathVariable String username,
-            @PathVariable @Valid @SerialNumber String serialNumber,
+            @PathVariable String serialNumber,
             @AuthenticationPrincipal User user)
     {
-        if (!user.getUsername().equals(username)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        var result = userDeviceService.assignDeviceToUser(serialNumber, user);
+        var result = userDeviceService.assignDeviceToUser(serialNumber, username);
         return result.fold(Status::toResponseEntity,
                 success -> {
                     var response = DeviceDto.fromEntity(success.getDevice());
@@ -82,13 +81,10 @@ public class UserDeviceController {
     )
     public ResponseEntity<?> unassignDeviceFromUser(
             @PathVariable String username,
-            @PathVariable @Valid @SerialNumber String serialNumber,
+            @PathVariable String serialNumber,
             @AuthenticationPrincipal User user)
     {
-        if (!user.getUsername().equals(username)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return userDeviceService.unassignDeviceFromUser(serialNumber, user)
+        return userDeviceService.unassignDeviceFromUser(serialNumber, username)
                 .fold(Status::toResponseEntity, ResponseEntity::ok);
     }
 }

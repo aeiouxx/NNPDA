@@ -15,7 +15,7 @@ public interface IDeviceService {
     Iterable<Device> findByModelName(String modelName, boolean withSensors);
 
     Either<Status, Device> create(CreateDeviceWithSensorSerialsDto device);
-    Either<Status, Device> update(String oldSerialNumber, CreateDeviceWithSensorSerialsDto device);
+    Either<Status, Device> update(String oldSerialNumber, DeviceWithSensorSerialsDto device);
     Either<Status, Void> delete(long id);
     Either<Status, Void> delete(String serialNumber);
 }

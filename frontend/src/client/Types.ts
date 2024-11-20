@@ -18,7 +18,7 @@ export interface CreateDeviceDto {
 export interface CreateSensorDto {
     serialNumber: string;
     name: string;
-    deviceSerial: string;
+    deviceSerialNumber: string;
 }
 
 export interface SensorWithDeviceDto extends BaseEntity {
@@ -26,4 +26,9 @@ export interface SensorWithDeviceDto extends BaseEntity {
     name : string,
     deviceSerial : string,
     deviceName: string
+}
+
+export interface UserDto {
+  username: string;
+  email: string;
 }

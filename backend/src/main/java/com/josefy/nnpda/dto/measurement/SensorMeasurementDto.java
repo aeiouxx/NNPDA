@@ -1,6 +1,5 @@
 package com.josefy.nnpda.dto.measurement;
 
-import com.josefy.nnpda.annotation.SerialNumber;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
@@ -8,7 +7,6 @@ import java.time.OffsetDateTime;
 
 public record SensorMeasurementDto(
         @Schema(description = "Sensor serial number", example = "DEADBEEF1234")
-        @SerialNumber
         String serialNumber,
 
         @Schema(description = "Measurement value", example = "25.5")

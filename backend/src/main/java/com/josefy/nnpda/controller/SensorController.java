@@ -4,10 +4,11 @@ import com.josefy.nnpda.dto.sensor.SensorDto;
 import com.josefy.nnpda.dto.sensor.SensorWithDeviceDto;
 import com.josefy.nnpda.dto.sensor.SensorWithDeviceResponseDto;
 import com.josefy.nnpda.infrastructure.utils.Status;
+import com.josefy.nnpda.model.Sensor;
 import com.josefy.nnpda.model.User;
 import com.josefy.nnpda.service.ISensorService;
-import com.josefy.nnpda.annotation.SerialNumber;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -33,21 +36,20 @@ public class SensorController {
     @GetMapping
     @Operation(
             summary = "Get all sensors",
-            description = "Returns all registered sensors",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            content = @Content(schema = @Schema(implementation = SensorDto[].class))
-                    ),
-            }
+            description = "Returns all registered sensors"
     )
-    public ResponseEntity<?> getAll(@AuthenticationPrincipal User user) {
-        var sensors = sensorService.findAll();
-        return ResponseEntity.ok(
-                StreamSupport.stream(sensors.spliterator(), false)
-                        .map(SensorDto::fromEntity)
-                        .collect(Collectors.toList())
-        );
+    public ResponseEntity<?> getAll(
+            @Parameter(description = "Include sensors in the response")
+            @RequestParam(defaultValue = "false") boolean omitDevices,
+            @AuthenticationPrincipal User user) {
+        var sensors = sensorService.findAll(omitDevices);
+        final Function<Sensor, ?> mapping = omitDevices
+                ? SensorDto::fromEntity
+                : SensorWithDeviceResponseDto::fromEntity;
+        var result = StreamSupport.stream(sensors.spliterator(), false)
+                        .map(mapping)
+                        .collect(Collectors.toList());
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{serialNumber}")
@@ -66,7 +68,7 @@ public class SensorController {
             }
     )
     public ResponseEntity<?> getOne(
-            @PathVariable @Valid @SerialNumber String serialNumber,
+            @PathVariable String serialNumber,
             @AuthenticationPrincipal User user) {
         var sensor = sensorService.findBySerialNumber(serialNumber);
         return sensor.fold(Status::toResponseEntity,
@@ -125,7 +127,7 @@ public class SensorController {
             }
     )
     public ResponseEntity<?> update(
-            @PathVariable @Valid @SerialNumber String serialNumber,
+            @PathVariable String serialNumber,
             @RequestBody @Valid SensorWithDeviceDto sensorDto,
             @AuthenticationPrincipal User user) {
         return sensorService.update(serialNumber, sensorDto)
@@ -149,7 +151,7 @@ public class SensorController {
             }
     )
     public ResponseEntity<?> delete(
-            @PathVariable @Valid @SerialNumber String serialNumber,
+            @PathVariable String serialNumber,
             @AuthenticationPrincipal User user) {
         return sensorService.delete(serialNumber).fold(Status::toResponseEntity,ResponseEntity::ok);
     }
