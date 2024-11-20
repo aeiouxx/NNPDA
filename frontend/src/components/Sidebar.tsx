@@ -33,7 +33,7 @@ type SidebarProps = {
   isAuthenticated: boolean;
   user: UserDetails | null
 }
-const Sidebar = ({ isAuthenticated, user}: SidebarProps) => {
+const Sidebar = ({  user}: SidebarProps) => {
   const linkClasses = ({ isActive }: { isActive: boolean }): string =>
     `block p-2 rounded ${isActive ? 'font-bold' : 'hover:font-bold'}`;
 

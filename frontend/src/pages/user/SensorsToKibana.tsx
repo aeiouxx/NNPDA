@@ -20,11 +20,11 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import axios from 'axios';
 import { DeviceDto, SensorWithDeviceDto } from '../../client/Types';
 import { useOutletContext } from 'react-router-dom';
 import { ProtectedContext } from '../../components/ProtectedRoute';
 import protectedAxios from '../../client/AxiosToken';
+import config from '../../config';
 
 
 interface UserDeviceSensorsFormValues {
@@ -84,6 +84,12 @@ const UserDeviceSensors: React.FC = () => {
       setFetchAttempted(true);
       setIsLoadingSensors(false);
     }
+  };
+
+
+  const handleViewInKibana = (sensorSerialNumber: string) => {
+    const kibanaUrl = `${config.kibanaBaseUrl}}/app/dashboards#/view/{dashboardId}?_a=(filters:!((query:(match:(sensor_serial_number:(query:'${sensorSerialNumber}'))))))`;
+    window.open(kibanaUrl, "_blank");
   };
 
   return (
@@ -160,12 +166,7 @@ const UserDeviceSensors: React.FC = () => {
                     <Button
                       variant="outlined"
                       color="primary"
-                      onClick={() => {
-                        window.open(
-                          `https://kibana.example.com/dashboard/${sensor.serialNumber}`,
-                          '_blank'
-                        );
-                      }}
+                      onClick={() => handleViewInKibana(sensor.serialNumber)}
                     >
                       View in Kibana
                     </Button>

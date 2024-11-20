@@ -17,19 +17,19 @@ services:
       - db
     networks:
       - nnpda-network
-  frontend:
-    container_name: vite-react
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - 5000:5000
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - backend
-    networks:
-      - nnpda-network
+  # frontend:
+  #   container_name: vite-react
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - 5000:5000
+  #   environment:
+  #     - NODE_ENV=development
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - nnpda-network
   db:
     container_name: postgres
     image: postgres

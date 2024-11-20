@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { BaseEntity } from "../client/Types";
 
-export interface Column<T, K> {
+export interface Column<T, _K> {
   key: keyof T;
   header: string;
   editable?: boolean;
