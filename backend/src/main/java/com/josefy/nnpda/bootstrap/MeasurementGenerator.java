@@ -32,7 +32,6 @@ public class MeasurementGenerator  {
         }
     }
 
-
     private void generateMeasurementsForDevice(Device device) {
         var measurements = new ArrayList<Measurement>();
         for (var sensor : device.getSensors()) {

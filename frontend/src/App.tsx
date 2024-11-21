@@ -12,6 +12,7 @@ import SensorsPage from './pages/admin/Sensors/SensorsManager';
 import AssignDeviceForm from './pages/admin/Devices/AssignDeviceForm';
 import SensorsToKibana from './pages/user/SensorsToKibana';
 import KibanaEmbed from './pages/user/KibanaEmbed';
+import config from './config';
 
 const router = createBrowserRouter([
     {
@@ -35,7 +36,7 @@ const router = createBrowserRouter([
                 path: "home",
                 element: 
                     <iframe 
-                        src="http://localhost:5601/app/dashboards#/view/14b4f5b6-06c9-4e1c-97c7-25f1968d29fa?embed=true&_g=(refreshInterval%3A(pause%3A!t%2Cvalue%3A60000)%2Ctime%3A(from%3Anow-15m%2Cto%3Anow))&show-time-filter=true&hide-filter-bar=true"
+                        src={`${config.kibanaBaseUrl}/app/dashboards#/view/14b4f5b6-06c9-4e1c-97c7-25f1968d29fa?embed=true&_g=(refreshInterval%3A(pause%3A!t%2Cvalue%3A60000)%2Ctime%3A(from%3Anow-15m%2Cto%3Anow))&show-time-filter=true&hide-filter-bar=true`}
                         style={{ width: "100%", height: "100%", border: "none" }} />
             },
             {

@@ -66,6 +66,9 @@ public class DeviceAndSensorSeeder implements CommandLineRunner {
             var keyHash = hashProvider.hash(device.getSerialNumber());
             var credentials = generateCredentials(device, keyHash);
             device.setDeviceCredential(credentials);
+            if (deviceRepository.existsBySerialNumber(device.getSerialNumber())) {
+                return;
+            }
             deviceRepository.save(device);
         }
 

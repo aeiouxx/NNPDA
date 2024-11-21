@@ -5,9 +5,6 @@ server:
 jwt:
   secret: ${JWT_SECRET}
 
-cors:
-  allowed-origins: "http://localhost:5000"
-
 swagger:
   enabled: true
 springdoc:
