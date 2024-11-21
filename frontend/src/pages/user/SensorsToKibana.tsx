@@ -21,7 +21,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DeviceDto, SensorWithDeviceDto } from '../../client/Types';
-import { useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { ProtectedContext } from '../../components/ProtectedRoute';
 import protectedAxios from '../../client/AxiosToken';
 import config from '../../config';
@@ -41,7 +41,8 @@ const UserDeviceSensors: React.FC = () => {
   const [sensors, setSensors] = useState<SensorWithDeviceDto[]>([]);
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const [isLoadingSensors, setIsLoadingSensors] = useState(false);
-    const [fetchAttempted, setFetchAttempted] = useState(false); 
+  const [fetchAttempted, setFetchAttempted] = useState(false); 
+  const navigate = useNavigate();
   const {
     control,
     handleSubmit,
@@ -87,10 +88,9 @@ const UserDeviceSensors: React.FC = () => {
   };
 
 
-  const handleViewInKibana = (sensorSerialNumber: string) => {
-    const kibanaUrl = `${config.kibanaBaseUrl}}/app/dashboards#/view/{dashboardId}?_a=(filters:!((query:(match:(sensor_serial_number:(query:'${sensorSerialNumber}'))))))`;
-    window.open(kibanaUrl, "_blank");
-  };
+  const navigateToEmbed = (sensorSerialNumber: string) => {
+    navigate(`/me/kibana-embed/${sensorSerialNumber}`);
+  }
 
   return (
     <div>
@@ -166,9 +166,9 @@ const UserDeviceSensors: React.FC = () => {
                     <Button
                       variant="outlined"
                       color="primary"
-                      onClick={() => handleViewInKibana(sensor.serialNumber)}
+                      onClick={() => navigateToEmbed(sensor.serialNumber)}
                     >
-                      View in Kibana
+                      View via Kibana
                     </Button>
                   </TableCell>
                 </TableRow>

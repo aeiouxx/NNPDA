@@ -10,7 +10,7 @@ const sidebarRoutes = [
   },
   {
     path: "/me/sensors",
-    label: "Sensors",
+    label: "My Sensors",
     roles: ["ROLE_USER", "ROLE_ADMIN"], 
   },
   {
