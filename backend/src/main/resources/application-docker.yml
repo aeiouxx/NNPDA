@@ -6,7 +6,7 @@ jwt:
   secret: ${JWT_SECRET}
 
 cors:
-  allowed-origins: "http://vite-react:5173"
+  allowed-origins: "http://localhost:5000"
 
 swagger:
   enabled: true
